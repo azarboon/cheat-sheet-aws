@@ -4,7 +4,7 @@
  
 ### Access Control
 
-IAM service supports only one type of resource-based policy called a role *trust policy*, which is attached to an IAM role. Trust policies define which principal entities can assume the role.
+IAM service supports only one type of resource-based policy called *trust policy*, which is attached to an IAM role. Trust policies define which principal entities can assume the role.
 
 Amazon Cloud Directory: hierarchical data store. Doesn’t support trust relationship between on-prem and other domains
 
