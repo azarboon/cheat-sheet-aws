@@ -1,7 +1,36 @@
-# cheat-sheet-aws
+# Tricky tips AWS Solutions Architect Associate certification exam (cheat sheet)
 
 
+
+### Database Types
+
+* key-value : Only Dynamodb, single-digit millisecond latency. For high-traffic web applications
+* In-memory: ElastiCache, sub-millisecond latency. Caching. For session management, gaming leaderboards, geospatial applications
+* Graph: Amazon Neptune, for fraud detection, social networking, recommendation engines. 
+* Relational: Redshift (columnar storage), latency in seconds. Analyze all your data and get insights across operational databases, data lakes, data warehouses.
+
+### Relational Database Service  & Aurora
+
+
+Aurora Global Database: RPO of seconds, RTO of minutes. For fail-over, read replicas have to be manually promoted.
+
+Read replicas have async replication. RDS Multi-AZ has sync replication.
+
+You have to pay for cross-region data transfers.
+
+Aurora Replicas connect to the same storage volume as the primary DB instance, but support read operations only. Read replica's priority in case of a failover: replica with the lowest numbered tier will be promoted. If two or more replicas share the same priority, then replica that is largest in size will be rpomoted.
  
+Migrating RDS to Aurora requires significant effort. To scale, you can enable storage auto-scaling for RDS MySQL.
+
+Aurora supports multi-master (MySQL compatible), but not RDS. In a multi-master cluster, all DB instances have read/write capability (no failover mechanism, has continuous availability). It scales out write performance across multiple AZs.
+
+To encrypt and un-encrypted instance: Take a snapshot of the database, copy it as an encrypted snapshot, and restore a database from the encrypted snapshot. Terminate the previous database
+
+To have in-transit encrypted connection with an already encrypted RDS/Aurora database, you can download and use existing AWS-provided root certificates.
+
+In encrypted instances, all logs, backups, and snapshots are encrypted. 
+ 
+
 ### Access Control
 
 IAM service supports only one type of resource-based policy called *trust policy*, which is attached to an IAM role. Trust policies define which principal entities can assume the role.
