@@ -9,6 +9,15 @@
 * Graph: Amazon Neptune, for fraud detection, social networking, recommendation engines. 
 * Relational: Redshift (columnar storage), latency in seconds. Analyze all your data and get insights across operational databases, data lakes, data warehouses.
 
+### ElastiCache
+
+ElastiCache should not be used as the main database. Can be used to store aggregation results (e.g. retrieving data, do some computation and storing that). It's NOT serverless, requires provisioning & maintenance. Provides sub-millisecond latency. 
+
+* MemCached: For simple models. Supports multi-thread/core. SASL-based authentication.
+* Redis: Supports everything execpt multi-thread, that is: encryption, HA (opt for Multi-AZ and automatic fail-over), compliances, pub/sub etc. Authentication using AUTH command and SG
+
+Both supports partitioning.
+
 ### DynamoDB:
 
 It's serverless, and good for unpredictable / unstructured data (e.g eCommerce apps). Millisecond latency. Automated scaling with minimal overhead.
