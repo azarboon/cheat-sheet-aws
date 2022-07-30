@@ -1,13 +1,32 @@
-# Tricky tips AWS Solutions Architect Associate certification exam (cheat sheet)
+# Tricky tips for AWS Solutions Architect Associate certification exam (cheat sheet)
 
 
 
 ### Database Types
 
-* key-value : Only Dynamodb, single-digit millisecond latency. For high-traffic web applications
+* key-value : Only Dynamodb, Millisecond latency. For high-traffic web applications
 * In-memory: ElastiCache, sub-millisecond latency. Caching. For session management, gaming leaderboards, geospatial applications
 * Graph: Amazon Neptune, for fraud detection, social networking, recommendation engines. 
 * Relational: Redshift (columnar storage), latency in seconds. Analyze all your data and get insights across operational databases, data lakes, data warehouses.
+
+### DynamoDB:
+
+It's serverless, and good for unpredictable / unstructured data (e.g eCommerce apps). Millisecond latency. Automated scaling with minimal overhead.
+
+It can query only primary keys (i.e. partition and sort key) and indexes. Global secondary index and local secondary index enable you to query attributes other than primary keys. For partial match, use ElasticSearch.
+
+DynamoDB transactions: writes to multiple tables (at the same time) or none.
+
+DynamoDB Accelerator (DAX): for individual object cache, query & scan cache. **No need to modify app logic**
+
+Creating Global table requires DynamoDb Streams. DynamoDB Streams + Lambda: Poll-based and synchronous invocation for new entries. Retry based on data model in source.
+
+Capacity modes:
+* Provisioned: Cost effective. Auto scaling for RCU & WCU (they can change independently). Good for smooth sustained usage.
+* On-demand: For unpredictable workloads, more expensive
+
+Best practices: keep item size small (max 400 KB. Compress bigger objects or use S3 Object ID pointers). Keep number of tables minimum (unless for time series data). Separate more and less frequently access data.
+
 
 ### Relational Database Service  & Aurora
 
