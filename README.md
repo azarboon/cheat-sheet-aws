@@ -1,5 +1,23 @@
 # Tricky tips for AWS Solutions Architect Associate certification exam (concise cheat sheet)
 
+### Security Group vs Network ACL
+
+You can't use Internet Gateway as source/destination for SG.
+
+SG supports only allow rules (you can't explicitly deny any a traffic). All rules evaluated. To enable pinging, allow ICMP protocol. In peered VPCs, you can reference SGs which are across different accounts but within same region.
+
+SGs are stateful, that is, if you allow e.g. inbound traffic on port 80, you don't need to configure the outbound traffic (and vice versa); because, security group automatically allows the return traffic.
+
+* Default SG's default rules: allows all outbound, allows inbound only from SG itself
+* Custom SG's default rules: allows all outbound, no inbound
+
+NACL supports allow and deny rules. Rules evaluated in order.
+* Default NACL’s default rules: allows all outbound, allows all inbound
+* Custom NACL’s default rules: denies all outbound, denies all inbound
+
+NACL are stateless, that is, if you allow e.g. inbound port on port 80, you need to explicitly allow outbound traffic on **ephermal portS** associated with the client (vice versa). 
+
+
 ### Elastic File System
 
 POSIX compliant, Supports only NFS protocol and Linux. Supports multi-AZ. 
