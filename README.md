@@ -1,4 +1,4 @@
-# Tricky tips for AWS Solutions Architect Associate certification exam (cheat sheet)
+# Tricky tips for AWS Solutions Architect Associate certification exam (concise cheat sheet)
 
 ### Elastic File System
 
