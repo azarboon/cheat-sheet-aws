@@ -1,4 +1,5 @@
-# Tricky tips for AWS Solutions Architect Associate certification exam (concise cheat sheet)
+# Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
+
 
 ### API Gateway
 
@@ -40,6 +41,9 @@ NACL are stateless, that is, if you allow e.g. inbound port on port 80, you need
 
 You can't use Internet Gateway as source/destination for SG.
 
+How to secure following architectures and block certain IPs:
+* Cloudfront + ALB + EC2: ALB has SG, so restrict ALB's SG to CF's public IPs. And restrict EC2's SG to ALB's SG. You can block IPs using WAF on CF. Remember that in this architecture, NACL is useless.
+* NLB + EC2:  NLB does't have SG nor terminates connection, and EC2 gets client's IP. SG can't block (it can only allow), so use NACL to block IPs.
 
 
 ### Storage
