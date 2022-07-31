@@ -2,8 +2,6 @@
 
 ### Security Group vs Network ACL
 
-You can't use Internet Gateway as source/destination for SG.
-
 SG supports only allow rules (you can't explicitly deny any a traffic). All rules evaluated. To enable pinging, allow ICMP protocol. In peered VPCs, you can reference SGs which are across different accounts but within same region.
 
 SGs are stateful, that is, if you allow e.g. inbound traffic on port 80, you don't need to configure the outbound traffic (and vice versa); because, security group automatically allows the return traffic.
@@ -17,6 +15,42 @@ NACL supports allow and deny rules. Rules evaluated in order.
 
 NACL are stateless, that is, if you allow e.g. inbound port on port 80, you need to explicitly allow outbound traffic on **ephermal portS** associated with the client (vice versa). 
 
+You can't use Internet Gateway as source/destination for SG.
+
+
+
+### Storage
+
+Storage gateway: unlimited storage to on-prem:
+* S3 File Gateway: NFS and SMB protocols, integrates with AD.
+* FSx File Gateway: SMB protocl, stores on Windows File server Server (not S3), integrates with AD
+* Tape Gateway: iSCSI virtual tape library (VTL) interface. Storage on S3, can be transitioned to Glacier/Deep Archive
+* Volume Gateway: block storage (EBS snapshot), iSCSI protocol. Stores on S3 but data is not directly accessible. Two modes:
+  1. Cached: Primary data stored on s3, frequently access data cached locally
+  2. Stored: Primary data stored locally, low-latency access to entire dataset, async backup to AWS.
+
+
+S3 is the cheapest storage solution (after Glacier). EFS costs 3x more than EBS per GB, but you pay for what you use and it can be used by multiple instances at a time. Whereas in EBS you pay for provisioned capacity (even if you don't use it) and a volume can be accessed only by an instance at a time. Meawhile, EFS costs way less than FSx Lustre.
+
+Sub-millisecond latency: FSx for Lustre
+
+Concurrent access: EFS, S3, FSx for Lustre
+
+Parallel file system: FSx for Lustre
+
+EFS and FSx for Lustre can be mounted only on Linux instances.
+
+FSx Windows File shares can be mounted on both Windows and Linux instances (you need to install cifs-utils package)
+
+FSx Lustre integrates only with ECS EC2. Wheras, EFS integrates with both ECS EC2 and Fargate.
+
+S3 integrates with FSx for Lustre  but not with EFS, EBS and FSx Windows.
+
+Multi-AZ: EFS and FSx Windows
+
+* NAS is a **file system**, works with NFS and SMB protocols. Possible destinaitons are FSx and EFS. 
+* SAN is a **block-storage**, works with ISCSI and Fibre Channel protocols. Possible desitnaiton is EBS.
+* S3 is a **object storage**, exposes data through a RESTfull API that can be accessed from anywhere. S3 is not a destination for file systems nor can be mounted on EC2 instances. 
 
 ### Elastic File System
 
@@ -40,38 +74,6 @@ Access control:
 * IAM: to control who can administer file system 
 * EFS Access Point: App level access to files and directories using POSIX compliant user & group permission.
 * Security Group: acts like a firewall to contorl trafifc flow
-
-### Storage
-
-Storage gateway: unlimited storage to on-prem:
-* S3 File Gateway: NFS and SMB protocols, integrates with AD.
-* FSx File Gateway: SMB protocl, stores on Windows File server Server (not S3), integrates with AD
-* Tape Gateway: iSCSI virtual tape library (VTL) interface. Storage on S3, can be transitioned to Glacier/Deep Archive
-* Volume Gateway: block storage (EBS snapshot), iSCSI protocol. Stores on S3 but data is not directly accessible. Two modes:
-  1. Cached: Primary data stored on s3, frequently access data cached locally
-  2. Stored: Primary data stored locally, low-latency access to entire dataset, async backup to AWS.
-
-S3 exposes data through a RESTfull API that can be accessed anywhere. It's not a file storage service and can't be natively mounted on EC2 instances. 
-
-S3 is the cheapest storage solution (after Glacier). EFS costs 3x more than EBS per GB, but you pay for what you use and it can be used by multiple instances at a time. Whereas in EBS you pay for provisioned capacity (even if you don't use it) and a volume can be accessed only by an instance at a time. Meawhile, EFS costs way less than FSx Lustre.
-
-Sub-millisecond latency: FSx Lustre
-
-Concurrent access: EFS, S3, FSx Lustre
-
-Parallel file system: FSx for Lustre
-
-EFS and FSx for Lustre can be mounted only on Linux instances.
-
-FSx Windows File shares can be mounted on both Windows and Linux instances (you need to install cifs-utils package)
-
-FSx Lustre integrates only with ECS EC2. Wheras, EFS integrates with both ECS EC2 and Fargate.
-
-S3 integrates with FSx Lustre  but not with EFS, EBS and FSx Windows.
-
-Multi-AZ: EFS and FSx Windows
-
-NAS **file systems** work with NFS and SMB protocols, whereas SAN are **block-storage** and work with ISCSI and Fibre Channel.
 
 
 ### Elastic Compute Cloud
