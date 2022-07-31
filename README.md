@@ -1,6 +1,40 @@
 # Tricky tips for AWS Solutions Architect Associate certification exam (cheat sheet)
 
 
+### Storage
+
+
+Storage gateway: unlimited storage to on-prem:
+* S3 File Gateway: NFS and SMB protocols, integrates with AD.
+* FSx File Gateway: SMB protocl, stores on Windows File server Server (not S3), integrates with AD
+* Tape Gateway: iSCSI virtual tape library (VTL) interface. Storage on S3, can be transitioned to Glacier/Deep Archive
+* Volume Gateway: block storage (EBS snapshot), iSCSI protocol. Stores on S3 but data is not directly accessible. Two modes:
+  1. Cached: Primary data stored on s3, frequently access data cached locally
+  2. Stored: Primary data stored locally, low-latency access to entire dataset, async backup to AWS.
+
+S3 exposes data through a RESTfull Internet API that can be accessed anywhere. It's not a file storage service and can't be natively mounted on EC2 instances. 
+
+S3 is the cheapest storage solution (after Glacier). EFS costs 3x more than EBS per GB, but you pay for what you use and it can be used by multiple instances at a time. Whereas in EBS you pay for provisioned capacity (even if you don't use it) and a volume can be accessed only by an instance at a time. Meawhile, EFS costs way less than FSx Lustre.
+
+Sub-millisecond latency: FSx Lustre
+
+Concurrent access: EFS, S3, FSx Lustre
+
+Parallel file system: FSx for Lustre
+
+EFS and FSx for Lustre can be mounted only on Linux instances.
+
+FSx Windows File shares can be mounted on both Windows and Linux instances (you need to install cifs-utils package)
+
+FSx Lustre integrates only with ECS EC2. Wheras, EFS integrates with both ECS EC2 and Fargate.
+
+S3 integrates with FSx Lustre  but not with EFS, EBS and FSx Windows.
+
+Multi-AZ: EFS and FSx Windows
+
+NAS **file systems** work with NFS and SMB protocols, whereas SAN are **block-storage** and work with ISCSI and Fibre Channel.
+
+
 ### Elastic Compute Cloud
 
 To reduce deployment time:
