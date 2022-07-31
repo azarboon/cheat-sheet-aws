@@ -1,5 +1,28 @@
 # Tricky tips for AWS Solutions Architect Associate certification exam (concise cheat sheet)
 
+### API Gateway
+
+API Gateway can directly access serveral services (e.g. DynamoDB) using proxy and mapping (no need for Lambda etc. in between)
+
+Access controls:
+* IAM permissions: great for users/roles that are already within in your account. Does both authentication and authorization. Leverages Signature Version 4.
+* Lambda/custom authorizer: Returns IAM policy so its flexible. Good for 3rd party auth (OAuth, SAML, etc). Does both authentication and authorization.
+* Cognito User Pool: no need to write any custom code. Only authentication, no authorization
+
+Supported API types:
+* RESTful: stateless client-server communication
+* WebSocket APIs: stateful full-duplex communication
+
+Throttling:
+* AWS throttling limits: Applies to all accounts and clients in a region.
+* Per-account limits: Applies to all APIs in an account in a Region.
+* Per-API, per-stage: applied at the API method level for a stage, and applies to **all** customers using the method.
+* Per-client throttling limits: using API keys
+
+API Gateway edge-optimized leverages Cloudfront, and is good for global clients. However, the gateway itself stays in one reigon.
+
+API cache can be applied for a stage not for a method.
+
 ### Security Group vs Network ACL
 
 SG supports only allow rules (you can't explicitly deny any a traffic). All rules evaluated. To enable pinging, allow ICMP protocol. In peered VPCs, you can reference SGs which are across different accounts but within same region.
@@ -252,12 +275,6 @@ S3 permissions: least privilege applies. Default permission is DENY unless there
 RDS/Aurora IAM authentication: short-lived token, more secure. Handled by AWSAuthenticationPlugin. Supports MariaDB, MySQL and PostgreSQL.
 
 Direct access to IAM through HTTPS: using IAM Query API along with access key ID and secret access key
-
-Ways to control access on API Gateway:
-* IAM permissions: great for users/roles that are already within in your account. Does both authentication and authorization. Leverages Signature Version 4.
-* Lambda/custom authorizer: Returns IAM policy so its flexible. Good for 3rd party auth (OAuth, SAML, etc). Does both authentication and authorization.
-* Cognito User Pool: no need to write any custom code. Only authentication, no authorization
-
 
 ElastiCache: IAM-auth not supported. Redis uses Auth command + SG, Memcached uses SASL-based auth.
 
