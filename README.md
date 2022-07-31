@@ -1,8 +1,29 @@
 # Tricky tips for AWS Solutions Architect Associate certification exam (cheat sheet)
 
+### Elastic File System
+
+POSIX compliant, Supports only NFS protocol and Linux. Supports multi-AZ. 
+
+Supports concurrent access; you can mount EFS file system onto many instances, concurrently read & write into it as you would on your local file system. To achieve this, create a subdirectory for each user and grant read-write-execute permissions to the users. Then mount the subdirectory to the users' home directory (don't modify permission on root directory). To lower latency, you can create EFS mount targets in each AZ.
+
+For cross-region collaboration on EFS with least operational overhead: use EC2 instances through cross-region VPC peering. Remember that cross-region copying EFS doesn't enable collaboration, everybody works on its own files.
+
+EFS integrates with both ECS EC2 and Fargate. Use DataSync to integrate EFS-S3.
+
+Performance modes: General purpose (low latency good for web server) and Max I/O
+
+Throughput modes: 
+* Bursting (default): throughput and size are linked
+* Provisioned: for constant throughput
+
+Storage modes: Standard and One Zone. There can be one life cycle policy to transition least-used-files to the correpsonding IA storage class, and another policy to transition back.
+
+Access control: 
+* IAM: to control who can administer file system 
+* EFS Access Point: App level access to files and directories using POSIX compliant user & group permission.
+* Security Group: acts like a firewall to contorl trafifc flow
 
 ### Storage
-
 
 Storage gateway: unlimited storage to on-prem:
 * S3 File Gateway: NFS and SMB protocols, integrates with AD.
@@ -12,7 +33,7 @@ Storage gateway: unlimited storage to on-prem:
   1. Cached: Primary data stored on s3, frequently access data cached locally
   2. Stored: Primary data stored locally, low-latency access to entire dataset, async backup to AWS.
 
-S3 exposes data through a RESTfull Internet API that can be accessed anywhere. It's not a file storage service and can't be natively mounted on EC2 instances. 
+S3 exposes data through a RESTfull API that can be accessed anywhere. It's not a file storage service and can't be natively mounted on EC2 instances. 
 
 S3 is the cheapest storage solution (after Glacier). EFS costs 3x more than EBS per GB, but you pay for what you use and it can be used by multiple instances at a time. Whereas in EBS you pay for provisioned capacity (even if you don't use it) and a volume can be accessed only by an instance at a time. Meawhile, EFS costs way less than FSx Lustre.
 
