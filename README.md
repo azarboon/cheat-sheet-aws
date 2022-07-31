@@ -1,5 +1,20 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Direct Connect and VPN
+
+Direct Connect (DX) provides private but not encrypted connection. It can connect to all AZs within same region.  An IPSec VPN connection using the same BGP prefix can be a low-cost backup connection for the DX.
+
+Virtual Private Gateway (VPG) and Transit gateway are components of Site-to-Site VPN as well as DX gateway; whereas, virtual interface (VIF) is component of DX . Public VIFs are for public resources as well as IPSec VPN. Private VIFs are for private resources. A hosted virtual interface is used to allow another account to access your Direct Connect link. 
+
+On customer side, DX has router/firewall, wheras, Site-to-Site VPN has **customer gateway device**.
+
+DX gateway is a grouping of VPGs and private VIFs. It's a globally available resource, can be created in one region and be accessed from all regions. DX gateway can connect to either:
+* Transit gateway; for VPCs in same region
+* VPG; for VPCs in different regions. 
+
+In architectural diagrams, the line between DX location and DX Gateway is a virtual interface. And after DX Gateway, its either VPG associations (to VPC) or Transit Gateway association.
+
+VPN CloudHub: provides secure connection between multiple sites and optionally with VPC. As it relies on Internet, the conneciton is not very reliable.
 
 ### API Gateway
 
@@ -23,6 +38,8 @@ Throttling:
 API Gateway edge-optimized leverages Cloudfront, and is good for global clients. However, the gateway itself stays in one reigon.
 
 API cache can be applied for a stage not for a method.
+
+To enable private connection from on-premise to API Gateway (avoiding Internet): create private VIF across Direct Connect and use API Gateway Private Endpoint.
 
 ### Security Group vs Network ACL
 
