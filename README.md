@@ -9,6 +9,23 @@
 * Graph: Amazon Neptune, for fraud detection, social networking, recommendation engines. 
 * Relational: Redshift (columnar storage), latency in seconds. Analyze all your data and get insights across operational databases, data lakes, data warehouses.
 
+### Redshift
+
+Both Redshift and RDS run relational databases. Redshift is specifically designed for online analytic processing (OLAP) and (concurrent) business intelligence (BI) applications, while RDS is for OLTP workloads.
+
+Redshift uses parallelism and caching to ipmrove performance. It's a columnar storage. Latency in seconds.
+
+DMS + Redshift: Enables resource-efficient petabyte-scale data warehouse with minimal effort.
+
+Redshift enhanced VPC routing forces all COPY and UNLOAD traffic moving between cluster and data repositories through your VPC, subsequently you can use VPC features.
+
+Redshift Spectrum is NOT serverless: it requires SQL client and an available Redshift cluster on an EC2 instance.
+
+Redshift Serverless doesn't require infra management. 
+
+Redshift HA: You can enable cross-Region snapshot copy on your cluster. In the event of a DR event, the snapshots in the replica Region can be restored to create a new cluster.
+
+
 ### ElastiCache
 
 ElastiCache should not be used as the main database. Can be used to store aggregation results (e.g. retrieving data, do some computation and storing that). It's NOT serverless, requires provisioning & maintenance. Provides sub-millisecond latency. 
@@ -100,11 +117,13 @@ For fine grained permissions on ECS, use IAM Task Role. ECS Container instance r
 
 To authenticate at CloudFront edge use Lambda@edge
 
+Remember that federation is different from assume role.
+
 Services that enable enable federation:
 * AWS SSO: define federated access permissions for your users based on their group memberships in a single centralized directory
 * AWS IAM: If you use multiple directories, or want to manage the permissions based on user attributes, consider AWS IAM as your design alternative
 
-Onprem Federation (SSO): You cannot assume a role, instead you must use federation (e.g. SAML 2.0 + AWS STS gives users temporary access without using IAM credentials). If your onprem IdP doesn’t support SAML 2.0, you need to use a Custom Identity Broker, which authenticates users, calls STS to obtain temporary credentials, then calls AWS federation endpoint and supply temporary credentials to request a sign-in token. Then you you can construct a URL with the token and give the URL to users, with which they can access AWS resources and console.
+Onprem Federation (SSO): SAML 2.0 Identity provider + AWS STS gives users temporary access WITHOUT using IAM credentials. If your onprem IdP doesn’t support SAML 2.0, you need to use a Custom Identity Broker, which authenticates users, calls STS to obtain temporary credentials, then calls AWS federation endpoint and supply temporary credentials to request a sign-in token. Then you you can construct a URL with the token and give the URL to users, with which they can access AWS resources and console. 
 
 To sync data across mobile and webapps in real time: AppSync / Cognito Sync (which requires Cognito federated identity pool (not User Pools) to work)
 
