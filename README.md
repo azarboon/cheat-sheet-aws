@@ -1,6 +1,81 @@
 # Tricky tips for AWS Solutions Architect Associate certification exam (cheat sheet)
 
 
+### Elastic Compute Cloud
+
+To reduce deployment time:
+* Create a Golden AMI with the static installation components already setup
+* Use EC2 user data to customize the dynamic installation parts at boot time
+
+AMI represents files written on disk, not memory. Use Hibernation to save instance memory (RAM) content to EBS root volume. AMI can help with dependencies, but won't help speeding up apps start time (instead use Hibernate).
+
+Cross-region copying of an AMI automatically creates a snapshot in the destination region.
+
+EC2 user data: By default, scripts have root user privileges. By default, runs only during the boot cycle when you first launch an instance
+
+Spot Fleet: Spot and On-Demand Instances to meet the target capacity specified in Spot Fleet request. Spot Fleet request select pools, subsequently Spot Instances come from the pools. Instance types in a capacity pool are the same, while Spot Fleet request can have various instance type and specs. Spot Fleet with *lowestPrice* strategy can be the most cost optimal solution. The request for Spot Instances is fulfilled if there is available capacity and the maximum price you specified in the request exceeds the current Spot price.
+
+You can cancel Spot Instance requests that are open, active or disabled. Cancelling an active Spot Instance request, does NOT terminate associated running instances. First you must cancel a persistent Spot Instance request, then manually terminate associated Spot Instances.
+
+DR strategies:
+RPO (data loss) – disaster- RTO (downtime)
+* pilot lights (RTO/RPO: 10s of minute): core minimum of services running
+* Warm standby (RTO/RPO: minutes): scaled down but fully functional system
+* Multi-site active/active (RTO/RPO real time)
+
+Scale up/down: vertical scaling
+
+Scale out/in: horizontal scaling
+
+Dedicated host: more visibility and control. Per host billing, more expensive. 
+
+Dedicated instance: per instance billing, can NOT be used for existing server-bound software licenses
+
+Instance's tenancy values:
+* default: shared tenancy hardware
+* host: dedicated host, runs on an isolated server
+* dedicated: dedicated instance, runs on a single-tenant hardware
+
+
+VPC tenancy values: 
+* default
+* dedicated. 
+
+Instances get VPC’s tenancy value by default, unless otherwise specified.
+
+If Launch configuration (LC)'s instance placement tenancy value is 
+* Null/default: instances will get VPC tenancy value.
+* Dedicated: instances will override VPC tenancy value and become Dedicated Instances.
+
+You can change the instance’s tenancy from dedicated to host and vice versa. Also, you can change it from shared tenancy to dedicated host and vice versa.
+
+Status check types:
+* System status check: requires AWS to fix it (due to hardware failure etc). Alternatively, you can automatically recover the instance: simplified automatic recovery based on instance configuration or by creating an CloudWatch alarm action. You cannot use CloudWatch events to directly trigger the recovery of the instance. A recovered instance is identical to the original instance; **everything** remains the same except that instance store and in-memory data get lost. Terminated or stopped instances cannot be recovered. The recover action is supported only on instances that use EBS volumes only (not instance store volumes)
+
+* Instance status check: requires customer to fix it. Cloudwatch recovery option works only for system status check failures, not for instance status check failures.
+
+In order to improve instances network performance, use:
+* Cluster placement group
+* EC2 Enhanced Networking (SR-OV)
+* Elastic Fabric Adapter (EFA). Improved ENA for HPC (provides all functionalities of ENA). Only works for Linux. Greate for tightly coupled workloads. Bypasses underlying Linux OS to provide low latency. This option provides lowest latency.
+
+Spread placement group: For apps that have a small number of critical instances that should be kept separate from each other. Supports Multi-AZ. Not suited for distributed and replicated workloads such as Hadoop.
+
+Partition placement group: For large distributed and replicated workloads, such as HDFS, HBase, and Cassandra. Supports Multi-AZ
+
+* Stopping an instance: private IP persists but public IP and data in instance store get lost
+* Rebooting an instance: keeps all IPs and data in instance store
+
+To get metadata: Download and run the Instance Metadata Query Tool (ec2 metadata command from SDKs), or “curl http://169.254.169.254/latest/meta-data/"
+
+You can manage configs and run ad-hoc commands rmeotely using System's Manager Run Command.
+
+Reservaiton options:
+* Capacity reservation: no commitment, capacity reserved in a specific AZ, no billing discount.
+* Zonal reserved instance: Fixed 1 or 3 year commitment, capacity reserved in a specific AZ, provides billing discount
+* Regional reserved instance: Fixed 1 or 3 year commitment, no capacity reserved, provides billing discount
+* Savings plan: fixed 1 or 3 year commitment, no capacity reserved, provides billings discount
+
 
 ### Database Types
 
