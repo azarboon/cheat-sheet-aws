@@ -1,5 +1,26 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Cloudfront and Global Accelerator
+
+Cloudfront (CF) can serve both static and dynamic content (e.g. video stream, APIs), but it may not be a good fit for highly dynamic and frequently changing content. Remember that S3 is not a good fit for dynamic content. Cloudfront + S3 can be cheaper, faster and more secure than delivering directly form S3. And to serve S3 static webiste thorugh HTTPS, you need to use CF.
+
+Cloudfront custom origin can be S3 static website, ALB, Lambda, or any other HTTP server (e.g. onprem server). Custom origins must be publicly accessible. CloudFront can route to multiple origins based on the content type. For HA and failover, use an origin group with primary and secondary origins.
+
+Points of presence (POP) skips regional edge case for:
+* Proxy HTTP methods (PUT, POST, PATCH, OPTIONS, and DELETE)
+* Dynamic requests, as determined at request time
+* when origin S3 bucket and optimal regional edge cache are in the same region
+
+Signed url serve individual files (e.g. paid content, dynamic generated url), while signed cookie serve multiple files.
+
+With Lambd@Edge, you can authenticate users at edge location or compress files to reduce data transfer cost.
+
+Field-level encryption: encrypt at edge, decrypted only by target app
+
+Cloudfront supports HTTP(s) and WebSocket. It can't expose static public IP. Cloudfront is better for spiked traffic than Global Accelerator.
+
+Global Accelerator (GA): For TCP, UDP (gaming), IoT (MQTT), VoIP, and HTTP use cases that require static IP addresses or deterministic, fast regional failover. It's more expensive than CF. It uses same network as CF so it provides the same latency.
+
 ### Direct Connect and VPN
 
 Direct Connect (DX) provides private but not encrypted connection. It can connect to all AZs within same region.  An IPSec VPN connection using the same BGP prefix can be a low-cost backup connection for the DX.
