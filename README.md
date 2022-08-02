@@ -1,5 +1,45 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+
+### Elastic Block Store and Instance store
+
+Instance store: can be root volume, offers very low latency, supports millions of IOPS (>256,000), offers temporary storage for frequently changed data or data that is  replicated across a fleet of instances, such as a load-balanced pool of web servers. It's included as part of instance usage cost (so it's more cost effective than Proviisoned IOPS volumes)
+
+SSD-backed EBS volumes:
+* All of them can be used as boot volume.
+* gp2 / gp3: 3 IOPS/GB, 16,000 IOPS/volume
+* io1 / io2 (Provisioned IOPS): 50 IOPS/GB, 64,000 IOPS/volume. Supports multi-attach. To maximize performance, use them with EBS-optimized EC2 instances.
+* io2 Block Express: Max iops 256,000, supports multi-attach, sub-millisecond latency.
+
+In PIOPS and gp3 volumes, size and performance are independent (can be changed independently). In gp2, they are linked. 
+
+HDD-backed EBS volumes:
+* Can't be used as boot volume.
+* low cost.
+* st1 (throuput optimized): 500 IOPS/volume but no SLA. 
+* sc1 (cold storage): 250 IOPS/volume but no SLA
+
+Unlike instance stores, EBS volumes can be added to running instance.
+
+Block device mapping supports EBS volumes and instance store. 
+
+RAID 0 to aggregate performance, RAID 1 to increase redundancy (can apply to both EBS volumes and instance store).
+
+Root EBS volumes are by default deleted upon EC2's termination (unlike non-root volumes). Instance store gets deleted upon failure or termination. 
+
+Encryption is supported by all EBS volume types (at rest and in transit). Encrypted and unencrypted volumes have same IOPS performance. All instance families support encryption, but not all instance types.
+
+You can have encrypted and unencrypted EBS volumes attached to an instance at the same time.
+
+You can't directly share an encrypted Amazon EBS volume with another AWS account (need to use snapshot). Snapshots are constrained to the Region in which they were created. To share a snapshot with another Region, copy the snapshot to that Region and then share the copy. 
+
+To share an encrypted snapshot with another account: share the custom key and encrypted snapshot (by modifying the permissions). The receiving account must copy the snapshot before they can then create volumes from the snapshot.
+
+You can share snapshot that are encrypted with customer managed key (not with default AWS keys).
+
+Encryption keys used by an Amazon EBS volume can't be changed. However, you can create a snapshot of the volume and then use the snapshot to create a new, encrypted copy of the volume. While creating the new volume, specify the new encryption key.
+
+
 ### Cloudfront and Global Accelerator
 
 Cloudfront (CF) can serve both static and dynamic content (e.g. video stream, APIs), but it may not be a good fit for highly dynamic and frequently changing content. Remember that S3 is not a good fit for dynamic content. Cloudfront + S3 can be cheaper, faster and more secure than delivering directly form S3. And to serve S3 static webiste thorugh HTTPS, you need to use CF.
@@ -190,7 +230,7 @@ If Launch configuration (LC)'s instance placement tenancy value is
 You can change the instance’s tenancy from dedicated to host and vice versa. Also, you can change it from shared tenancy to dedicated host and vice versa.
 
 Status check types:
-* System status check: requires AWS to fix it (due to hardware failure etc). Alternatively, you can automatically recover the instance: simplified automatic recovery based on instance configuration or by creating an CloudWatch alarm action. You cannot use CloudWatch events to directly trigger the recovery of the instance. A recovered instance is identical to the original instance; **everything** remains the same except that instance store and in-memory data get lost. Terminated or stopped instances cannot be recovered. The recover action is supported only on instances that use EBS volumes only (not instance store volumes)
+* System status check: requires AWS to fix it (due to hardware failure etc). Alternatively, you can automatically recover the instance: simplified automatic recovery based on instance configuration or by creating an CloudWatch alarm action. A recovered instance is identical to the original instance; **everything** remains the same except that instance store and in-memory data get lost. Terminated or stopped instances cannot be recovered. The recover action is supported only on instances that use EBS volumes only (not instance store volumes)
 
 * Instance status check: requires customer to fix it. Cloudwatch recovery option works only for system status check failures, not for instance status check failures.
 
