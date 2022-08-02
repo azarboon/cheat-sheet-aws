@@ -2,9 +2,9 @@
 
 ### Kinesis
 
-Kinesis Data Firehose is a near real-time streaming ETL and ** the easiest way to load streaming data ** into data stores and analytics tools, eg. S3, Redshift, Elasticsearch/Opensearch, HTTP endpoint. Kinesis Data Stream (KDS) can't directly send data to the mentioned destinations; it needs Firehose in between. Firehose is a fully managed scaling, no administration is needed. It does't support replay but supports batching and buffering (KDS is opposite).  Retention period max 24h.
+Kinesis Data Firehose is a near real-time streaming ETL and **the easiest way to load streaming data** into data stores and analytics tools, eg. S3, Redshift, Elasticsearch/Opensearch, HTTP endpoint. Kinesis Data Stream (KDS) can't directly send data to the mentioned destinations; it needs Firehose in between. Firehose is a fully managed scaling, no administration is needed. It does't support replay but supports batching and buffering (KDS is opposite).  Retention period max 24h.
 
-Kinesis Data Streams is real-time processing of streaming data. It supports replay, orderly set of records, and multiple consumers in parallel. A stream has +1 shards. KDS segregates stream’s data records into shards, using partition key associated with each data record. Producer push and consumer pulls data. There is at least once delivery. KDS requires manual scaling of shards. It doesn't support batching nor buffering. It can store data for up to 365 days. Enhanced-fanout provides dedicated read throughput for each consumer.
+Kinesis Data Streams is **real-time processing** of streaming data. It supports replay, orderly set of records, and multiple consumers in parallel. A stream has +1 shards. KDS segregates stream’s data records into shards, using partition key associated with each data record. Producer push and consumer pulls data. There is at least once delivery. KDS requires manual scaling of shards. It doesn't support batching nor buffering. It can store data for up to 365 days. Enhanced-fanout provides dedicated read throughput for each consumer.
 
 Remember that KDS can only be a source to Firehose but not a destinaiton. In KDS-Firehose model, Firehose’s PutRecord(Batch) operations are disabled and Kinesis Agent cannot write to Firehose directly. Instead, it needs to use KDS's PutRecord(s) operations, then KDS sends data to Firehose.
 
