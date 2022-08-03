@@ -1,5 +1,18 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+
+
+### Simple Notification Service: 
+
+pub-sub model, passively pushing message. Ordered only in FIFO. No buffer (SNS + SQS fan-out pattern allows buffering). SNS doesn't directly integrate with 3rd party SaaS. 
+
+Supported:
+* transport protocols: HTTP(S), Email/Email-JSON, SQS, SMS
+*subscribers: above list, mobile push, Lambda, Kinesis Data Firehose (not KDS)
+
+S3 cannot directly write data into SNS (can send only events). To stream existing files and updates from S3 to KDS, you cna use DMS.
+
+
 ### Kinesis
 
 Kinesis Data Firehose is a near real-time streaming ETL and **the easiest way to load streaming data** into data stores and analytics tools, eg. S3, Redshift, Elasticsearch/Opensearch, HTTP endpoint. Kinesis Data Stream (KDS) can't directly send data to the mentioned destinations; it needs Firehose in between. Firehose is a fully managed scaling, no administration is needed. It does't support replay but supports batching and buffering (KDS is opposite).  Retention period max 24h.
