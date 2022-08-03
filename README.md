@@ -1,6 +1,28 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Simple Queue Service
 
+Apps poll at their comfort. Good to **decouple app components**. At least once delivery without ordering, wheras, FIFO does exactly once delivery with ordering (To scale, use group ID). Provides automatic scaling at read time. Supports batching and buffering (SNS + SQS fan-out pattern). Stores message for 14 days. There can be multiple consumers per queue, but message can be consumed by one consumer at a time. SQS doesn't integrate directly with 3rd party SaaS.
+
+Options to set delay:
+* Delay Queues (max 15 min): message is hidden when it is first added to the queue (i.e. it's invisible to consumers) - DelaySeconds parameter
+* Individual message delay: up to 15 min
+* Visibility timeout (max 12 hours): message is hidden only after it is consumed from the queue (i.e. it prevents other consumers from receiving and processing the message again) Increasing the timeout, gives more time to consumers to process the message and prevents duplicate reading of the message. If a job is processed within the visibility timeout the message will be deleted. Otherwise, the message will become visible again (could be delivered twice). 
+* To set delay seconds on individual messages, use message timer.
+
+SQS Request-Response pattern requires SQS Temporary Queue Client
+
+SQS Dead Letter Queue used for debugging. SQS-Lambda integration is poll-based and synchronous invocation; and DLQ must be set on SQS side.
+
+To prioritize SQS messages, use separate queues and configure polling prioritization at app layer.
+
+To migrate from standard to FIFO queue: recreate queue, queue's name must end with .fifo suffix and throughput must be < 3000 msg/s. FIFO by default supports 300 msg/s without batching and 3000 msg/s with batching (i.e. batching 10 msg/operation)
+
+Polling controls API call time and retry behaviour from consumer’s side:
+* Short polling (default): queries only subet of servers, so it may not return all messages at first.
+* Long polling: queries all servers, SQS responds as soon as a msg is available. If polling wait time expires, SQS sends empty response. It reduces (false) empty responses, reduces latency, increases efficiency, reduces cost and returns msg as soon as they become available.
+
+SQS + Auto Scaling Group (with target tracking policy): dynamical scaling based on backlog per instance.
 
 ### Simple Notification Service: 
 
