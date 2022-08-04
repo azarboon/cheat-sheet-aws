@@ -1,5 +1,79 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Simple Storage Service
+
+
+S3 is a regional service, buckets are defined at regional level, but console is global.
+
+By default, an S3 object is owned by the AWS account that uploaded it. So the S3 bucket owner will not implicitly have access to the objects written by another account.
+
+For replication: Both source and destination buckets must have versioning enabled. Once enabled, replication copies only newly created objects. To copy existing objects, use S3 sync command. if the command fails, you can rerun it without duplication. In a versioned bucket, sync command copies only the current version of the object. Once versioning is enabled, you can never reverse it, you can just suspend it.
+
+Logs:
+* CloudTrail logs: detailed API tracking for bucket-level and object-level operations
+* S3 Server access logs: object-level operations, detailed records of requests for audit purpose, help you learn your customer base and understand your S3 bill
+
+Optimize performance
+* To improve performance WITHIN datacenter, you can use ElastiCache + S3; it enables sub-millisecond latency, high throughput, lower retrieval cost from S3. But to get media closer to user, use Cloudfront.
+* Multi-part upload: for files > 100 MB and up to 5TB. 
+* S3 Transfer Acceleration (S3TA) for files more than 1 GB; for less than 1 GB, use Cloudfront PUT/POST. S3TA charges only for accelerated transfers (not for failed attempts)
+* s3 byte-range fetche: parallelize GETs and transferg only the specified portion of the object
+* Cloudfront + S3: cheaper, faster and more secure than delivering directly form S3
+* You can scale read & write performance N times by using N prefixes in parallel.
+
+
+Locking:
+* S3 Object Lock: prevents objects from being deleted or overwritten for a fixed amount of time or indefinitely. In two ways: retention period and legal hold. An object version can have both, either or neither of them. You can define retention period either explicitly ("Retain Until Date" parameter) or through a bucket default setting (need to specify duration). Different versions of an object can have different retention modes and periods. Legal Hold provides same protection but remains in effect until removed. 
+* Vault Lock is only for Glacier and not for S3
+
+
+classes:
+* S3 storage class analysis only provides recommendations for Standard to Standard IA classes.
+* Before you transition objects from the S3 Standard or S3 Standard-IA storage classes to S3 Standard-IA or S3 One Zone-IA, you must store them at least 30 days in the S3 Standard storage class. However, you can transfer to other classes e.g. Deep Archive after one day being in Standard.
+
+
+Versioning
+* In a versioned bucket, DELETE operation only inserts a delete marker (the marker becomes current version). S3 Replication can replicate the markers. To automate recovery of the objects, you can transition "noncurrent versions" of objects. 
+* To permanently delete versioned object, you must use DELETE Object versionId. Similarly, life cycle rules can expire current object versions or permanently remove noncurrent object versions.
+* S3 always returns the latest version of an object.
+* If a bucket already has files, after enabling versioning, the existing files will have version Null.
+
+
+Access control:
+* Bucket policy: cross-account access, when IAM Policy size limit is a constraint, to enforce encryption at upload, to grant public access, to enforce Multi-factor authentication. It provides user and account level access, and applies to all of the objects within a single bucket.
+  - To enforce encryption at upload time: create a policy that denies any S3 Put request that does not include the x-amz-server-side-encryption header ("AES256" value for S3-managed keys, "aws:kms" value for AWS KMS–managed keys)
+  - To restrict access to a specific URL use "aws:referer". This is preferred over IP-based restriction.
+* Access Control List: legacy. 
+* IAM: It's centralized and easier to manage. Grants access only to users within your aws account (not account level).
+  - To grant folder-level permission to many users: create an IAM policy that grants folder-level permission (using policy variables), attach the policy to a group, then add users to the group.
+
+
+
+
+
+
+S3 Select: retrieve only subset of data using SQL
+All storage classes offer (11 9's) durability, but S3 One Zone-IA can get destroyed in case of AZ destruction. 
+Latency:
+S3 Glacier Instant Retrieval: milliseconds,
+S3 Glacier Flexible Retrieval: minutes or hours,
+S3 Glacier Deep Archive: hours (and no expedited mode)
+Designed availability:
+99.5: One Zone IA
+99.9: Intelligent-Tiering, Standard IA, Glacier Instant
+99.99: Standard, Glacier Deep Archive (hours latency), Glacier Flexible (mins or hours of la-tency)
+Availability SLA:
+99.9: Standard, Glacier Deep Archive
+Rest: 99%
+Min duration:
+Standard IA, One Zone IA charge for min 30 days
+Glacier (instant and flexible retrieval) charges for min 90 days
+Glacier Deep Archive charges for 180 days
+Intelligent-Tiering has no min duration, but monitors access pattern for at least 30 days to move objects. Also it charges extra.
+Transition
+Standard -> Standard IA -> Intelligent -> One Zone IA -> Glacier Instant -> Glacier Flexible -> Deep Archive
+You can NOT transition to S3 Standard. You can NOT transition from One Zone-IA to the Intelligent-Tiering, Standard-IA, or Glacier Instant Retrieval.
+
 ### Simple Queue Service
 
 Apps poll at their comfort. Good to **decouple app components**. At least once delivery without ordering, wheras, FIFO does exactly once delivery with ordering (To scale, use group ID). Provides automatic scaling at read time. Supports batching and buffering (SNS + SQS fan-out pattern). Stores message for 14 days. There can be multiple consumers per queue, but message can be consumed by one consumer at a time. SQS doesn't integrate directly with 3rd party SaaS.
