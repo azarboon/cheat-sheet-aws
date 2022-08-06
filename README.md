@@ -1,5 +1,32 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Lambda
+
+Lambda by default has access to Internet. VPC-enabled lambda needs a NAT gateway (and its subject to routing rules). To connect to VPC-resources, Lambda needs subnet IDs and security group IDs
+
+Cloudwatch metrics track number of requests, latency per request, requests resulting in error.
+
+Supported runtimes: C#/.NET , Go, Java, Node.js, Python, Ruby
+
+To optimize performance: use provisioned capacity, optimize static initialization, change memory-settings (memory is proportional to vCPU). Reuse code / dependency with Lambda Layers.
+
+Lambda IAM role to access S3 bucket:
+* Same account: grant permission to role, verify there is no explicit deny in bucket policy
+* Different accounts: grant permissions on both role and bucket policy
+
+Limits:
+* Env variable size: 4 KB. 
+* Deployment through container image or zip file, max 50 or 250 MB respectivcely 
+* Disk (/tmp): 512 MB 
+* Max duration: 15 min (900s)
+
+Invocation:
+* synchronous: retry / error handling by invoker (nothing by default). e.g. API, ALB
+* Asynchronous: two retries (3 in total). Destination or DLQ for failed attempts. e.g. S3, SNS, SES
+* Poll-based: Sync invocation, retry based on data expiration in data source. e.g. Kinesis, SQS, DynamoDB Streams
+In async invocation, DLQ has to be on Lambda side. In (Lambda + SQS), (Lambda + SNS), (Lambda + S3 event) scenarios, DLQ must be set on SQS, Lambda, Lambda respectively.
+
+
 ### Simple Storage Service
 
 
