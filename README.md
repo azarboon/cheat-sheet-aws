@@ -14,7 +14,7 @@ SQS + ASG (using target tracking policy): enables dynamically scaling based on b
 
 #### Launch template vs Launch configuration
 
-Launch configuration (LC) is legacy, can **NOT** be modified, though can be used with multiple Auto Scaling Groups (ASG). Changing launch configuration of an ASG does **NOT affect existing instances** (until the instance gets terminated/replaced)
+Launch configuration (LC) is legacy, can **NOT** be modified, though can be used with multiple ASGs. Changing launch configuration of an ASG does **NOT affect existing instances** (until the instance gets terminated/replaced)
 
 Launch templates offer more options: mixing Spot instances with on-demand, enables you to specify multiple instance types, it can be modified.
 
