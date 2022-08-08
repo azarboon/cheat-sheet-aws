@@ -17,7 +17,7 @@ To setup DNS resolution for hybrid cloud using conditional forwarding rules and 
 * Inbound endpoint: Forward from DNS resolvers on your network to Route 53 Resolver (in your VPC)
 * Outbound endpoint: Forward from Route 53 Resolver (in your VPC) to resolvers on your network
 
-DNS failover using Route 53 health checks:
+DNS failover configuration types using Route 53 health checks:
 * Active-active: returns one or more resource. In case of failure, fails back to a healthy resource. Configured using any routing policy except “failover routing policy”
 * Active-passive: Route 53 actively returns a primary resource. In case of failure, Route 53 returns the backup resource. Configured using only "failover routing policy".
 * Combination
