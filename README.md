@@ -1,5 +1,32 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+
+### Logging and Monitoring
+
+CloudTrail, VPC Flow Logs, CloudWatch Events can't be used debug and trace data across accounts (wheras X-Ray can do cross-account)
+
+Enable VPC Flow logs (at VPC, Subnet or ENI levels) to capture info about traffic inside VPC. To troubleshoot why a conneciton might not work: If inbound and outbound are different (i.e. one is ACCEPT and other is REJECT) problem likely lies in Network ACL. Otherwise, the problem likely lies in either security group or in Network ACL.
+
+Enable ELB's access logs to capture detailed information about requests.
+
+EC2's basic monitoring has 5-min interval (default). Enable detailed monitoring for 1-min interval (can be done after launch), then you can use Cloudwatch to perform analysis.
+
+Cloudwatch services: Events, Logs
+
+Cloudwatch Logs: Monitor, store, and access your log files (Cloudwatch Subscriptions: for real time processing)
+
+Cloudwatch Events: Near real time stream of system events from AWS resources
+
+Cloudwatch Container Insights: Collects, aggregate, and summarize metrics and logs from container-ized apps
+
+Unified CloudWatch agent: collect internal system-level metrics (e.g. Swaputilization, memory usage) as custom metrics
+
+Standard resolution (default) has 1 min interval. Custom metrics can go to high resolution (1s), and their alarm can be triggered every 10s, 30s, or any multiple of 60s.
+
+Cloudwatch instance recovery: Cloudwatch **alarm** for system status check (StatusCheckFailed_System metric), and set it to do an action named EC2 Instance Recovery. Everything (ebs, ips, placement group etc) remains same but instance store gets wiped out.
+
+
+
 ### Lambda
 
 Lambda by default has access to Internet. VPC-enabled lambda needs a NAT gateway (and its subject to routing rules). To connect to VPC-resources, Lambda needs subnet IDs and security group IDs
