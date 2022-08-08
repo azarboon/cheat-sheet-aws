@@ -46,23 +46,13 @@ CNAME record doesn’t work on zone apex but can redirect query to ANY record. F
 Followings are not allowed:
 * `Domain1.com` to anywhere else
 
-Alias record can apply to zone apex and subdomains but can redirect queries only to select AWS services: 
-* API Gateway custom regional API or edge-optimized API
-* VPC interface endpoint
-* Cloud-Front distribution
-* Beanstalk
-* ELB
-* Global Accelerator
-* S3 bucket configured as static web-site
-* Another Route 53 record in the same hosted zone
-
-Alias record can’t redirect queries to another domain. Followings are allowed:
+Alias record can apply to zone apex and subdomains but can redirect queries only to select AWS services. Alias record can’t redirect queries to another domain. Following is allowed:
 * `Domain1.com` to `www.domain1.com`
 
-Alias doesn't work to any other domain. Following not allowed:
+Alias doesn't work to any other domain. Following is not allowed:
 * `domain1.com` to `sub.domain2.com`
 
-Btw, following is acceptable:
+BTW, following is allowed too:
 `Domain1.com Alias(A) service.amazonaws.com`
 
 Route 53 doesn't charge for Alias queries to AWS resources, but charges for CNAME queries.
