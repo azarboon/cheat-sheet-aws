@@ -1,5 +1,63 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Auto Scaling Group
+
+ELB is responsible for distributing traffic wheras ASG is responsible for placing / terminating instances. ASG uses EC2's status checks by default. You should configure it to use ELB's health checks. Then if any check fails, ASG replaces the instance. Moreover, you can attach one or more load balancer's target groups to ASG within same region. Then, any existing or added ASG's instance will be automatically registered with the ELB (if the process fails, most likely ASG's max capacity is exceeded). 
+
+You can attach a running instance to an ASG.
+
+If connection draining is enabled, ASG waits for in-flight requests to complete or timeout before terminating instances.
+
+`Sticky Session`: binds a user's session to a specific instance. This ensures that all requests from the user during the session are sent to the same instance.
+
+SQS + ASG (using target tracking policy): enables dynamically scaling based on backlog per instance.
+
+#### Launch template vs Launch configuration
+
+Launch configuration (LC) is legacy, can **NOT** be modified, though can be used with multiple Auto Scaling Groups (ASG). Changing launch configuration of an ASG does **NOT affect existing instances** (until the instance gets terminated/replaced)
+
+Launch templates offer more options: mixing Spot instances with on-demand, enables you to specify multiple instance types, it can be modified.
+
+#### Scaling policies
+
+Simple scaling policy is discouraged: After your ASG launches or terminates instances, it waits for a cooldown period (300s by default) to end before any further scaling activities. You can reduce cooldown period by leveraging AMI. If there is a relevant metric for scaling, AWS recommends using target tracking policy, otherwise step scaling policy (Enable `default instance warmup` to wait before collecting metrics). However both those policies entail a lag at the beginning, so if the question mentions a recurring schedule set, most likely it asks for Scheduled policy. 
+
+If there are multiple policies in force, ASG chooses the one that provides largest capacity (whether its scale out or in)
+
+#### Troubleshooting
+
+For updating or troubleshooting:
+* You can suspend & resume ASG’s processes (scaling activities). For example, suspend `ReplaceUnhealthy` process, do the update, then set instance health status back to healthy, then reactivate the process.
+* Put the instance into Standby state, do the update, exit Standby state. Standby instances count toward available instances and don’t get replaced (by default), ASG doesn’t perform health check on them.
+
+
+#### Termination
+
+Default termination policy (in order): AZ with most instances -> allocation strategy for On-Demand vs Spot instances -> instance with oldest launch configuration -> instance with oldest launch template -> instance that is closest to the next billing hour
+
+Reasons why ASG doesn't terminate an instance:
+* Health check grace period not expired yet
+* ASG's process suspended: HealthCheck, ReplaceUnhealthy, Terminate
+* ASG doesn't immediately terminate instances with an Impaired status
+* ASG doesn't perform health checks on instances in the Standby state (set it back to In-Service)
+* ASG uses EC2's status check by default, set it to use ELB health check.
+
+
+#### Tenancy value
+
+Instance's tenancy values:
+* `default`: shared tenancy hardware
+* `host`: dedicated host, runs on an isolated server
+* `dedicated`: dedicated instance, runs on a single-tenant hardware
+
+VPC's tenancy values: `default` or `dedicated`. By default, instances get VPC’s tenancy value unless otherwise specified.
+
+You can change the instance’s tenancy from dedicated to host and vice versa. Also, you can change it from shared tenancy to dedicated host and vice versa.
+
+if Launch configuration's instance placement tenancy value is 
+* `Null` or `default`: instances will get VPC's tenancy value.
+* `Dedicated`: instances will overide VPC's tenancy value and become Dedicated Instances.
+
 ### Virtual Private Cloud and networking
 
 To uniquely identify an Availability Zone (AZ) across the two accounts use AZ ID (e.g. use1-az2) instead of AZ code (e.g. us-east-1a)
