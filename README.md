@@ -1,5 +1,46 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Virtual Private Cloud and networking
+
+To uniquely identify an Availability Zone (AZ) across the two accounts use AZ ID (e.g. use1-az2) instead of AZ code (e.g. us-east-1a)
+
+A subnet must reside within A SINGLE AZ, unlike VPC that can span across multiple AZs.
+
+To enable private DNS routing using Route 53, enable DNS resolution + DNS host name in VPC.
+
+Default VPC's instances have public and private hostname. Non-default VPC's instances have private but not public hostname (depending on settings)
+
+VPC console options (to create a new VPC): single public subnet, public and private subnets (using NAT gateway), public and private subnets using Site-to-Site (S2S) VPN, private subnet with S2S VPN
+
+Internet Gateway is highly available, and performs network address translation (NAT) for instances in public subnet. NAT instance/gateway are located in public subnet and perform NAT for instances in private subnet.
+
+#### connectivity and sharing
+
+Connectivity from outside to onprem through VPC: public subnet route table needs to route onprem-destined-traffic to Virtual Private Gateway (VPG) and subsequently to onprem
+
+Private connection from on-premise to API Gateway avoiding Internet: create private VIF across Direct Connect and use API Gateway Private Endpoint 
+
+* VPC Peering: simplest way to connect two VPCs. Cross-region. **No transitive routing**. Can be use along with security groups (SG) to restrict access but its difficult to manage peering connections and SGs at scale (it should be used ideally for < 10 VPCs). Lowest cost. Peering enables you to route traffic between VPCs using private IP addresses (VPCs' CIDRs must not overlap). Instances in either VPC can communicate with each other as if they are within the same network. VPC peering does **NOT** facilitate centrally managed VPCs. An  account owner can **NOT share the VPC itself** with another AWS accounts. Peering exposes **the whole network**; its recommended to expose an app to other VPCs using AWS PrivateLink (VPC Endpoint Services); which is a scalable and secure alternative.
+* Transit VPC: hub VPC connects to spoke VPCs through VPN. Customer has to manage EC2-based VPN which costs more.  Has limited throughout per VPC (up to 1.25 Gbps per VPN tunnel)
+* Transit Gateway: hub-spoke model, fully managed service, highly available, No VPN overlay re-quired. Simlplifies management and reduces operational costs. Regional service so connecting to VPCs within **same region**
+* Shared services VPC: centralized VPC endpoints with either Transit Gateway / VPC peering. reduces cost and administrative overhead. Communications between VPC and public AWS services won't egress AWS.
+* VPC sharing: leverages Resource Access Manager (RAM) service to share one or more **subnets** (from owner VPC) with other AWS accounts (participants) **belonging to the same parent organization** from AWS Organizations. The owner account can **NOT share VPC itself**. VPC sharing **leverages implicit routing** within a VPC for applications that require a **high degree of interconnectivity**. 
+
+Cost of sharing services centrally between accounts within same region: Resource Access Manager is cheaper than Transit Gateway
+
+To achieve transitive routing between private subents in VPCs, you can use Transit Gateway + Resource Access Manager
+
+#### endpoints
+VPC endpoints are highly available and enables you to privately connect your VPC to supported services (traffic won't egress AWS). 
+Only consumer VPCs initiate connections to the service provider VPC.
+
+Endpoint types:
+* Interface: It’s an ENI with private IP within service consumer VPC, and connects to NLB within service provider VPC.
+* Gateway Load Balancer: Use it to send traffic to a fleet of virtual appliances.
+* Gateway: It's a gateway that you specify as a target in your route table for traffic destined to S3 or DynamoDB. It's free of charge.
+
+
+
 ### Route 53 
 
 
