@@ -1,5 +1,75 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Route 53 
+
+
+Routing policies:
+* Failover: only for active-passive failover
+* Geo-location: routing based on user location. You cannot use it to reduce latency. It can exclude certain regions and localize the content.
+* Geo proximity: routing based on the geographic location of users and resources. You can use positive/negative bias to expand/shrink the size of the geographic region from which traffic is routed to a resource.
+* Latency: Use when you have resources in multiple AWS Regions and you want to lowest latency. It’s not used for failover. How it works: DNS routes the query to a Route 53 name server. Route 53 refers to its data on latency between regions choose the one with lowest and responds with IP address
+* Unlike simple routing policy, multi-value routing policy returns only healthy resources
+* When simple routing policy returns multiple values, a random value is chosen by the CLIENT.
+* Unlike Elastic Load Balancer, Route 53's multi value routing policy is a client side load balancing
+
+
+To setup DNS resolution for hybrid cloud using conditional forwarding rules and DNS endpoints (which are created on Route 53 Resolver):
+* Inbound endpoint: Forward from DNS resolvers on your network to Route 53 Resolver (in your VPC)
+* Outbound endpoint: Forward from Route 53 Resolver (in your VPC) to resolvers on your network
+
+DNS failover using Route 53 health checks:
+* Active-active: returns one or more resource. In case of failure, fails back to a healthy resource. Configured using any routing policy except “failover routing policy”
+* Active-passive: Route 53 actively returns a primary resource. In case of failure, Route 53 returns the backup resource. Configured using only "failover routing policy".
+* Combination
+
+
+To setup a health check for private resources: create a Cloudwatch metric and associate an alarm. Then create a health check that checks the alarm itself.
+
+To use 3rd party registrar with Route 53: buy domain from 3rd party registrar. Create a hosted zone in Route 53. Update Name Server records on 3rd party website to use route 53 name servers.
+
+To have private DNS using Route 53 enable DNS resolution + DNS host names in VPC.
+
+Route 53 is prone to DNS caching. Alternatively, you can use Global Accelerator (GA). Route 53 doesn’t reduce internet latency as GA does. GA will direct users to the closest edge location and then use the AWS global network.
+
+#### DNS reocrd types:
+
+`Domain1.com` is zone apex, `www.domain1.com` and `sub.domain.com` are subdomains.
+
+A/AAAA reocrd: maps a hostname to ipv4/ipv6
+
+CNAME record doesn’t work on zone apex but can redirect query to ANY record. Followings are allowed:
+* `sub.domain1.com` to `sub.domain2.com`
+* `sub.domain1.com` to `domain2.com`
+* `www.domain1.com` to `www.domain2.com`
+* `www.domain1.com` to `sub.domain2.com`
+
+Followings are not allowed:
+* `Domain1.com` to anywhere else
+
+Alias record can apply to zone apex and subdomains but can redirect queries only to select AWS services: 
+* API Gateway custom regional API or edge-optimized API
+* VPC interface endpoint
+* Cloud-Front distribution
+* Beanstalk
+* ELB
+* Global Accelerator
+* S3 bucket configured as static web-site
+* Another Route 53 record in the same hosted zone
+
+Alias record can’t redirect queries to another domain. Followings are allowed:
+* `Domain1.com` to `www.domain1.com`
+
+Alias doesn't work to any other domain. Following not allowed:
+* `domain1.com` to `sub.domain2.com`
+
+Btw, following is acceptable:
+`Domain1.com Alias(A) service.amazonaws.com`
+
+Route 53 doesn't charge for Alias queries to AWS resources, but charges for CNAME queries.
+
+After updating a record, user may be directed to the old target because of TTL (time to live)
+
+
 
 ### Logging and Monitoring
 
