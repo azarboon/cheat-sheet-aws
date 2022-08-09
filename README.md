@@ -1,5 +1,18 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Containers
+
+Fargate can intergate with both EKS and ECS, and provides serverless orchestration. ECS + EC2 is not serverless, though it provides access to underlying OS (unlike Fargate)
+
+ALB's Dynamic Port Mapping redirects traffic to multiple ECS Tasks running on the same ECS Container instance.
+
+Fargate is charged based on vCPU and memory resources used. ECS EC2 charges based on used resources (e.g. EC2 and EBS)
+
+To troubleshoot disconnected ECS container instances: Verify that ECS agent is installed and running, Docker daemon is running, and that the IAM instance profile has the necessary permissions applied. Remember that Amazon ECS optimized AMI already contains ECS container agent.
+
+ECS Container instance roles give permission to all the apps (ECS agent and docker daemon use that). To have fine grain permissions, use IAM Task Role. 
+
+
 ### Elastic Load Balancer
 
 ELB does not have any caching capability. ELB is responsible for distributing traffic and ASG responsible for placing & terminating in-stances. 
@@ -18,7 +31,7 @@ Routing mechanisms for target types:
 * Instance id: uses primary private IP address 
 * IP address: uses any private IP address 
 
-Target IPs can be instances in peered VPCs, AWS resources that are addressed by IP and port, onpremise resources linked with Direct COnnect or VPN.
+Target IPs can be instances in peered VPCs, AWS resources that are addressed by IP and port, onpremise resources linked with Direct Connect or VPN.
 
 To attach instances in a private subnet to ELB: create a public subnet in SAME AZ, then associate PUBLIC subnet to the ELB. This also prevents direct connectivity to instances from Internet.
 
@@ -38,7 +51,6 @@ Has Security Group (SG) Associated rules:
 * Allows inbound traffic to load balancer’s listener port
 * Allows outbound traffic to instance's SG on instance's listener port as well as health check port
 
-Dynamic Port Mapping redirects traffic to multiple ECS Tasks running on the same ECS Container instance.
 
 #### Network Load Balancer
 
