@@ -101,17 +101,6 @@ Endpoint types:
 
 ### Route 53 
 
-
-Routing policies:
-* Failover: only for active-passive failover
-* Geo-location: routing based on user location. You cannot use it to reduce latency. It can exclude certain regions and localize the content.
-* Geo proximity: routing based on the geographic location of users and resources. You can use positive/negative bias to expand/shrink the size of the geographic region from which traffic is routed to a resource.
-* Latency: Use when you have resources in multiple AWS Regions and you want to lowest latency. It’s not used for failover. How it works: DNS routes the query to a Route 53 name server. Route 53 refers to its data on latency between regions choose the one with lowest and responds with IP address
-* Unlike simple routing policy, multi-value routing policy returns only healthy resources
-* When simple routing policy returns multiple values, a random value is chosen by the CLIENT.
-* Unlike Elastic Load Balancer, Route 53's multi value routing policy is a client side load balancing
-
-
 To setup DNS resolution for hybrid cloud using conditional forwarding rules and DNS endpoints (which are created on Route 53 Resolver):
 * Inbound endpoint: Forward from DNS resolvers on your network to Route 53 Resolver (in your VPC)
 * Outbound endpoint: Forward from Route 53 Resolver (in your VPC) to resolvers on your network
@@ -129,6 +118,20 @@ To use 3rd party registrar with Route 53: buy domain from 3rd party registrar. C
 To have private DNS using Route 53 enable DNS resolution + DNS host names in VPC.
 
 Route 53 is prone to DNS caching. Alternatively, you can use Global Accelerator (GA). Route 53 doesn’t reduce internet latency as GA does. GA will direct users to the closest edge location and then use the AWS global network.
+
+#### routing policies
+
+* Failover: only for active-passive failover
+* Geo-location: routing based on user location. You cannot use it to reduce latency. It can exclude certain regions and localize the content.
+* Geo proximity: routing based on the geographic location of users and resources. You can use positive/negative bias to expand/shrink the size of the geographic region from which traffic is routed to a resource.
+* Latency: Use when you have resources in multiple AWS Regions and you want to lowest latency. It’s not used for failover. How it works: DNS routes the query to a Route 53 name server. Route 53 refers to its data on latency between regions choose the one with lowest and responds with IP address
+
+Unlike simple routing policy, multi-value routing policy returns only healthy resources
+
+When simple routing policy returns multiple values, a random value is chosen by the CLIENT.
+
+Unlike Elastic Load Balancer, Route 53's multi value routing policy is a client side load balancing
+
 
 #### DNS reocrd types:
 
