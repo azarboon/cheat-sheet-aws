@@ -1,5 +1,54 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Elastic Load Balancer
+
+ELB does not have any caching capability. ELB is responsible for distributing traffic and ASG responsible for placing & terminating in-stances. 
+
+Let's say AZ1 has 4 targets and AZ2 has 6 targets. If ELB's cross-zone load balancing is:
+* Enabled: each target receives 10% of traffic
+* Disabled: Each AZ1’s target receives 12.5% and AZ2’s target receives 8.3% of traffic.
+
+Min 2 AZs are required for high availability (not 3)
+
+Supports multiple TLS certificates using Server Name Indication (SNI)
+
+Enable ELB access logs to capture detailed information about requests.
+
+Routing mechanisms for target types:
+* Instance id: uses primary private IP address 
+* IP address: uses any private IP address 
+
+Target IPs can be instances in peered VPCs, AWS resources that are addressed by IP and port, onpremise resources linked with Direct COnnect or VPN.
+
+To attach instances in a private subnet to ELB: create a public subnet in SAME AZ, then associate PUBLIC subnet to the ELB. This also prevents direct connectivity to instances from Internet.
+
+Gateway Load Balancer: supports GENEVE protocol on port 6081
+
+#### Application Load Balancer
+
+Layer 7. Supports HTTP and HTTPS. Provides only static DNS. Weighted target group (weighted routing policy is for Route 53). Supported targets are instance id, IP, Lambda. If target group has no registered target, it returns `HTTP 503: Service unavailable`
+
+Supports authentication from corporate and OIDC compliant IdPs: using authentication action on a listener rule that integrates with Cognito **User Pools**.
+
+Does NOT do SSL passthrough, instead it terminates the first SSL connection on the ALB and then re-encrypt the traffic and connect to the EC2. To encryption in-transit: use HTTP listner, then install SSL certificates on the ALB and EC2 instances.
+
+In host-based routing, the rule `*.example.com` matches `test.example.com` but doesn't match `example.com`
+
+Has Security Group (SG) Associated rules:
+* Allows inbound traffic to load balancer’s listener port
+* Allows outbound traffic to instance's SG on instance's listener port as well as health check port
+
+Dynamic Port Mapping redirects traffic to multiple ECS Tasks running on the same ECS Container instance.
+
+#### Network Load Balancer
+
+Layer 4. Supports TCP, UDP and TLS. Provides static DNS and static IP. Doesn't have security group. Doesn't do connection termination (i.e. EC2 can access client's IP). Supported targets are instance id, IP and ALB. 
+
+Does SSL passthrough. To encrypt intransit: use TCP listener then terminate SSL on EC2 instances.
+
+Provides better performance than ALB.
+
+
 ### Auto Scaling Group
 
 ELB is responsible for distributing traffic wheras ASG is responsible for placing / terminating instances. ASG uses EC2's status checks by default. You should configure it to use ELB's health checks. Then if any check fails, ASG replaces the instance. Moreover, you can attach one or more load balancer's target groups to ASG within same region. Then, any existing or added ASG's instance will be automatically registered with the ELB (if the process fails, most likely ASG's max capacity is exceeded). 
