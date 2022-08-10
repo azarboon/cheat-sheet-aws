@@ -26,70 +26,6 @@ To migrate an account to another Organization: use console, no need to create a 
 2. Send an invite to the member account from the new Organization 
 3. Accept the invite to the new organization from the member account
 
-### Route 53 
-
-To setup DNS resolution for hybrid cloud using conditional forwarding rules and DNS endpoints (which are created on Route 53 Resolver):
-* Inbound endpoint: Forward from DNS resolvers on your network to Route 53 Resolver (in your VPC)
-* Outbound endpoint: Forward from Route 53 Resolver (in your VPC) to resolvers on your network
-
-DNS failover configuration types using Route 53 health checks:
-* Active-active: returns one or more resource. In case of failure, fails back to a healthy resource. Configured using any routing policy except “failover routing policy”
-* Active-passive: Route 53 actively returns a primary resource. In case of failure, Route 53 returns the backup resource. Configured using only "failover routing policy".
-* Combination
-
-
-To setup a health check for private resources: create a Cloudwatch metric and associate an alarm. Then create a health check that checks the alarm itself.
-
-To use 3rd party registrar with Route 53: buy domain from 3rd party registrar. Create a hosted zone in Route 53. Update Name Server records on 3rd party website to use route 53 name servers.
-
-To have private DNS using Route 53 enable DNS resolution + DNS host names in VPC.
-
-Route 53 is prone to DNS caching. Alternatively, you can use Global Accelerator (GA). Route 53 doesn’t reduce internet latency as GA does. GA will direct users to the closest edge location and then use the AWS global network.
-
-#### routing policies
-
-* Failover: only for active-passive failover
-* Geo-location: routing based on user location. You cannot use it to reduce latency. It can exclude certain regions and localize the content.
-* Geo proximity: routing based on the geographic location of users and resources. You can use positive/negative bias to expand/shrink the size of the geographic region from which traffic is routed to a resource.
-* Latency: Use when you have resources in multiple AWS Regions and you want to lowest latency. It’s not used for failover. How it works: DNS routes the query to a Route 53 name server. Route 53 refers to its data on latency between regions choose the one with lowest and responds with IP address
-
-Unlike simple routing policy, multi-value routing policy returns only healthy resources
-
-When simple routing policy returns multiple values, a random value is chosen by the CLIENT.
-
-Unlike Elastic Load Balancer, Route 53's multi value routing policy is a client side load balancing
-
-
-#### DNS reocrd types:
-
-`Domain1.com` is zone apex, `www.domain1.com` and `sub.domain.com` are subdomains.
-
-A/AAAA reocrd: maps a hostname to ipv4/ipv6
-
-CNAME record doesn’t work on zone apex but can redirect query to ANY record. Followings are allowed:
-* `sub.domain1.com` to `sub.domain2.com`
-* `sub.domain1.com` to `domain2.com`
-* `www.domain1.com` to `www.domain2.com`
-* `www.domain1.com` to `sub.domain2.com`
-
-Followings are not allowed:
-* `Domain1.com` to anywhere else
-
-Alias record can apply to zone apex and subdomains but can redirect queries only to select AWS services. Alias record can’t redirect queries to another domain. Following is allowed:
-* `Domain1.com` to `www.domain1.com`
-
-Alias doesn't work to any other domain. Following is not allowed:
-* `domain1.com` to `sub.domain2.com`
-
-BTW, following is allowed too:
-`Domain1.com Alias(A) service.amazonaws.com`
-
-Route 53 doesn't charge for Alias queries to AWS resources, but charges for CNAME queries.
-
-After updating a record, user may be directed to the old target because of TTL (time to live)
-
-
-
 ### Logging and Monitoring
 
 CloudTrail, VPC Flow Logs, CloudWatch Events can't be used debug and trace data across accounts (wheras X-Ray can do cross-account)
@@ -205,7 +141,9 @@ API cache can be applied for a stage not for a method.
 To enable private connection from on-premise to API Gateway (avoiding Internet): create private VIF across Direct Connect and use API Gateway Private Endpoint.
 
 
-## Virtual Private Cloud and networking
+## Networking
+
+### Virtual Private Cloud
 
 To uniquely identify an Availability Zone (AZ) across the two accounts use AZ ID (e.g. use1-az2) instead of AZ code (e.g. us-east-1a)
 
@@ -219,7 +157,7 @@ VPC console options (to create a new VPC): single public subnet, public and priv
 
 Internet Gateway is highly available, and performs network address translation (NAT) for instances in public subnet. NAT instance/gateway are located in public subnet and perform NAT for instances in private subnet.
 
-#### connectivity and sharing
+#### Connectivity and sharing resources
 
 Connectivity from outside to onprem through VPC: public subnet route table needs to route onprem-destined-traffic to Virtual Private Gateway (VPG) and subsequently to onprem
 
@@ -281,6 +219,69 @@ DX gateway is a grouping of VPGs and private VIFs. It's a globally available res
 In architectural diagrams, the line between DX location and DX Gateway is a virtual interface. And after DX Gateway, its either VPG associations (to VPC) or Transit Gateway association.
 
 VPN CloudHub: provides secure connection between multiple sites and optionally with VPC. As it relies on Internet, the conneciton is not very reliable.
+
+
+### Route 53 
+
+To setup DNS resolution for hybrid cloud using conditional forwarding rules and DNS endpoints (which are created on Route 53 Resolver):
+* Inbound endpoint: Forward from DNS resolvers on your network to Route 53 Resolver (in your VPC)
+* Outbound endpoint: Forward from Route 53 Resolver (in your VPC) to resolvers on your network
+
+DNS failover configuration types using Route 53 health checks:
+* Active-active: returns one or more resource. In case of failure, fails back to a healthy resource. Configured using any routing policy except “failover routing policy”
+* Active-passive: Route 53 actively returns a primary resource. In case of failure, Route 53 returns the backup resource. Configured using only "failover routing policy".
+* Combination
+
+
+To setup a health check for private resources: create a Cloudwatch metric and associate an alarm. Then create a health check that checks the alarm itself.
+
+To use 3rd party registrar with Route 53: buy domain from 3rd party registrar. Create a hosted zone in Route 53. Update Name Server records on 3rd party website to use route 53 name servers.
+
+To have private DNS using Route 53 enable DNS resolution + DNS host names in VPC.
+
+Route 53 is prone to DNS caching. Alternatively, you can use Global Accelerator (GA). Route 53 doesn’t reduce internet latency as GA does. GA will direct users to the closest edge location and then use the AWS global network.
+
+#### routing policies
+
+* Failover: only for active-passive failover
+* Geo-location: routing based on user location. You cannot use it to reduce latency. It can exclude certain regions and localize the content.
+* Geo proximity: routing based on the geographic location of users and resources. You can use positive/negative bias to expand/shrink the size of the geographic region from which traffic is routed to a resource.
+* Latency: Use when you have resources in multiple AWS Regions and you want to lowest latency. It’s not used for failover. How it works: DNS routes the query to a Route 53 name server. Route 53 refers to its data on latency between regions choose the one with lowest and responds with IP address
+
+Unlike simple routing policy, multi-value routing policy returns only healthy resources
+
+When simple routing policy returns multiple values, a random value is chosen by the CLIENT.
+
+Unlike Elastic Load Balancer, Route 53's multi value routing policy is a client side load balancing
+
+
+#### DNS reocrd types:
+
+`Domain1.com` is zone apex, `www.domain1.com` and `sub.domain.com` are subdomains.
+
+A/AAAA reocrd: maps a hostname to ipv4/ipv6
+
+CNAME record doesn’t work on zone apex but can redirect query to ANY record. Followings are allowed:
+* `sub.domain1.com` to `sub.domain2.com`
+* `sub.domain1.com` to `domain2.com`
+* `www.domain1.com` to `www.domain2.com`
+* `www.domain1.com` to `sub.domain2.com`
+
+Followings are not allowed:
+* `Domain1.com` to anywhere else
+
+Alias record can apply to zone apex and subdomains but can redirect queries only to select AWS services. Alias record can’t redirect queries to another domain. Following is allowed:
+* `Domain1.com` to `www.domain1.com`
+
+Alias doesn't work to any other domain. Following is not allowed:
+* `domain1.com` to `sub.domain2.com`
+
+BTW, following is allowed too:
+`Domain1.com Alias(A) service.amazonaws.com`
+
+Route 53 doesn't charge for Alias queries to AWS resources, but charges for CNAME queries.
+
+After updating a record, user may be directed to the old target because of TTL (time to live)
 
 
 ## Storage
