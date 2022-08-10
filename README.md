@@ -27,45 +27,6 @@ To migrate an account to another Organization: use console, no need to create a 
 3. Accept the invite to the new organization from the member account
 
 
-### Other services
-
-WorkSpaces: Desktop-as-a-Service (DaaS) solution
-
-X-Ray: debug and trace data **across accounts** and visualize it in a centralized account
-
-Cost Explorer: identify underutilized instances that may be downsized **within the same instance family**. Understand impact of Savings Plan and Reserved Instances on the bill.
-
-Compute Optimizer: downsizing recommendations **within or across instance families**, upsizing recommendations to remove performance bottlenecks, and recommendations for instances that are parts of an ASG. Recommends optimal instance **type** to reduce costs. It does **NOT** recommend instance purchase options
-
-Step Functions: workflow orchestration. It's preferred over Amazon Simple Workflow Service
-
-Trusted Advisor: helps you to reduce cost, increase performance, and improve security. It offers Service Limits check. To get access to its API (AWS Support API) you need Business or Enterprise support plans.
-
-AWS Batch: Efficiently supports multi-node parallel jobs, running a single jobs across instances. Compatible with IP-based, internode communication frameworks such as Apache MXNet, TensorFlow, Caffe2, or Message Passing Interface.
-
-Systems Manager: centralized end-to-end operational hub for hybrid cloud (viewing & automation). You can create logical groups of resources, view their config changes, API activity, compliance status etc. With Systems Manager’s Run Command you can manage configs and run ad-hoc commands remotely
-
-CloudFormation: maintain the **state** of the overall architecture. StackSet allows you to create stacks in multiple accounts and  regions
-
-AWS Config: evaluates the configurations and compliance of your resources and to remedy non-compliant resources. You can configure it to stream configuration changes an SNS topic. It can maintain a **history of resource configuration changes**
-
-App Mesh: **application-level** networking for microservices applications.
-
-Beanstalk: quick application deployment. Allows access to underlying resources and OS.
-
-CodeDeploy: automates **application (not infrastructure) deployments** into AWS /on-premise. Good fit when code changes need to be managed but not for infrastructure services.
-
-OpsWork: Chef or Puppet solution
-
-EventBridge: event-based service for **third-party SaaS** and AWS resources. Enables asynchronous messaging patterns.
-
-Amazon MQ: Similar to SQS, but used for **existing applications that are being migrated** into AWS. It supports AMQP, STOMP, MQTT and WebSocket.
-
-Amazon Glue: ETL service. It **requires significant coding efforts**. You can write transformed data in a compressed format.
-
-EMR: MapReduce, big data workloads such as Spark, Hive, Hadoop. EMR requires **infra management and significant coding effort**.
-
-
 ### Virtual Private Cloud and networking
 
 To uniquely identify an Availability Zone (AZ) across the two accounts use AZ ID (e.g. use1-az2) instead of AZ code (e.g. us-east-1a)
@@ -890,3 +851,43 @@ Cognito user pool: authentication (including social sign-in), user management
 Cognito identity pool (federated identities): verifies token, exchanges it with temporary credentials (through STS) and returns temp credentials to client. Client directly call AWS services using temporary records.
 
 IAM group is not an identity and can’t be identified as a principal in an IAM policy, can’t be used to group EC2 instances, can’t assume a role (only users and services can), can’t be nested.
+
+
+## Other services
+
+WorkSpaces: Desktop-as-a-Service (DaaS) solution
+
+X-Ray: debug and trace data **across accounts** and visualize it in a centralized account
+
+Cost Explorer: identify underutilized instances that may be downsized **within the same instance family**. Understand impact of Savings Plan and Reserved Instances on the bill.
+
+Compute Optimizer: downsizing recommendations **within or across instance families**, upsizing recommendations to remove performance bottlenecks, and recommendations for instances that are parts of an ASG. Recommends optimal instance **type** to reduce costs. It does **NOT** recommend instance purchase options
+
+Step Functions: workflow orchestration. It's preferred over Amazon Simple Workflow Service
+
+Trusted Advisor: helps you to reduce cost, increase performance, and improve security. It offers Service Limits check. To get access to its API (AWS Support API) you need Business or Enterprise support plans.
+
+AWS Batch: Efficiently supports multi-node parallel jobs, running a single jobs across instances. Compatible with IP-based, internode communication frameworks such as Apache MXNet, TensorFlow, Caffe2, or Message Passing Interface.
+
+Systems Manager: centralized end-to-end operational hub for hybrid cloud (viewing & automation). You can create logical groups of resources, view their config changes, API activity, compliance status etc. With Systems Manager’s Run Command you can manage configs and run ad-hoc commands remotely
+
+CloudFormation: maintain the **state** of the overall architecture. StackSet allows you to create stacks in multiple accounts and  regions
+
+AWS Config: evaluates the configurations and compliance of your resources and to remedy non-compliant resources. You can configure it to stream configuration changes an SNS topic. It can maintain a **history of resource configuration changes**
+
+App Mesh: **application-level** networking for microservices applications.
+
+Beanstalk: quick application deployment. Allows access to underlying resources and OS.
+
+CodeDeploy: automates **application (not infrastructure) deployments** into AWS /on-premise. Good fit when code changes need to be managed but not for infrastructure services.
+
+OpsWork: Chef or Puppet solution
+
+EventBridge: event-based service for **third-party SaaS** and AWS resources. Enables asynchronous messaging patterns.
+
+Amazon MQ: Similar to SQS, but used for **existing applications that are being migrated** into AWS. It supports AMQP, STOMP, MQTT and WebSocket.
+
+Amazon Glue: ETL service. It **requires significant coding efforts**. You can write transformed data in a compressed format.
+
+EMR: MapReduce, big data workloads such as Spark, Hive, Hadoop. EMR requires **infra management and significant coding effort**.
+
