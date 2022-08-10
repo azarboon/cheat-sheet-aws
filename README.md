@@ -1,16 +1,5 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
-### CloudTrail
-
-In console you can view events since last 90 days.
-
-You cannot use Cloudtrail to debug and trace data  across accounts, though you can consolidate log files from multiple accounts in a single bucket. 
-
-Event types. By default, it logs only management events:
-* Management events (**control plane operations**): management operations that are performed on resources in your account (e.g. security config, routing, registering new device, log API operations)
-* Data events (**data plane operations**): resource operations performed on or within a resource (e.g. S3 object level API)
-* Insight events: capture unusual API call rate or error rate activity in your account. If enabled and detects an unusual activity, then insights events are logged
-
 ### AWS Organizations
 
 Service control policies (SCP) affect only member accounts (its IAM users, roles, and root user) and not management account. Any account has only those permissions permitted by every parent above it (either implicit or explicit `Deny` will restrict access). SCPs do not affect service-linked role
@@ -25,30 +14,6 @@ To migrate an account to another Organization: use console, no need to create a 
 1. Remove the member account from the old organization 
 2. Send an invite to the member account from the new Organization 
 3. Accept the invite to the new organization from the member account
-
-### Logging and Monitoring
-
-CloudTrail, VPC Flow Logs, CloudWatch Events can't be used debug and trace data across accounts (wheras X-Ray can do cross-account)
-
-Enable VPC Flow logs (at VPC, Subnet or ENI levels) to capture info about traffic inside VPC. To troubleshoot why a conneciton might not work: If inbound and outbound are different (i.e. one is ACCEPT and other is REJECT) problem likely lies in Network ACL. Otherwise, the problem likely lies in either security group or in Network ACL.
-
-Enable ELB's access logs to capture detailed information about requests.
-
-EC2's basic monitoring has 5-min interval (default). Enable detailed monitoring for 1-min interval (can be done after launch), then you can use Cloudwatch to perform analysis.
-
-Cloudwatch services: Events, Logs
-
-Cloudwatch Logs: Monitor, store, and access your log files (Cloudwatch Subscriptions: for real time processing)
-
-Cloudwatch Events: Near real time stream of system events from AWS resources
-
-Cloudwatch Container Insights: Collects, aggregate, and summarize metrics and logs from container-ized apps
-
-Unified CloudWatch agent: collect internal system-level metrics (e.g. Swaputilization, memory usage) as custom metrics
-
-Standard resolution (default) has 1 min interval. Custom metrics can go to high resolution (1s), and their alarm can be triggered every 10s, 30s, or any multiple of 60s.
-
-Cloudwatch instance recovery: Cloudwatch **alarm** for system status check (StatusCheckFailed_System metric), and set it to do an action named EC2 Instance Recovery. Everything (ebs, ips, placement group etc) remains same but instance store gets wiped out.
 
 ### Simple Queue Service
 
@@ -93,28 +58,6 @@ Kinesis Data Streams is **real-time processing** of streaming data. It supports 
 
 Remember that KDS can only be a source to Firehose but not a destinaiton. In KDS-Firehose model, Firehose’s PutRecord(Batch) operations are disabled and Kinesis Agent cannot write to Firehose directly. Instead, it needs to use KDS's PutRecord(s) operations, then KDS sends data to Firehose.
 
-
-### Cloudfront and Global Accelerator
-
-Cloudfront (CF) can serve both static and dynamic content (e.g. video stream, APIs), but it may not be a good fit for highly dynamic and frequently changing content. Remember that S3 is not a good fit for dynamic content. Cloudfront + S3 can be cheaper, faster and more secure than delivering directly form S3. And to serve S3 static webiste thorugh HTTPS, you need to use CF.
-
-Cloudfront custom origin can be S3 static website, ALB, Lambda, or any other HTTP server (e.g. onprem server). Custom origins must be publicly accessible. CloudFront can route to multiple origins based on the content type. For HA and failover, use an origin group with primary and secondary origins.
-
-Points of presence (POP) skips regional edge case for:
-* Proxy HTTP methods (PUT, POST, PATCH, OPTIONS, and DELETE)
-* Dynamic requests, as determined at request time
-* when origin S3 bucket and optimal regional edge cache are in the same region
-
-Signed url serve individual files (e.g. paid content, dynamic generated url), while signed cookie serve multiple files.
-
-With Lambd@Edge, you can authenticate users at edge location or compress files to reduce data transfer cost.
-
-Field-level encryption: encrypt at edge, decrypted only by target app
-
-Cloudfront supports HTTP(s) and WebSocket. It can't expose static public IP. Cloudfront is better for spiked traffic than Global Accelerator.
-
-Global Accelerator (GA): For TCP, UDP (gaming), IoT (MQTT), VoIP, and HTTP use cases that require static IP addresses or deterministic, fast regional failover. It's more expensive than CF. It uses same network as CF so it provides the same latency.
-
 ### API Gateway
 
 API Gateway can directly access serveral services (e.g. DynamoDB) using proxy and mapping (no need for Lambda etc. in between)
@@ -141,7 +84,43 @@ API cache can be applied for a stage not for a method.
 To enable private connection from on-premise to API Gateway (avoiding Internet): create private VIF across Direct Connect and use API Gateway Private Endpoint.
 
 
-## Networking
+## Logging and Monitoring
+
+CloudTrail, VPC Flow Logs, CloudWatch Events can't be used debug and trace data across accounts (wheras X-Ray can do cross-account)
+
+Enable VPC Flow logs (at VPC, Subnet or ENI levels) to capture info about traffic inside VPC. To troubleshoot why a conneciton might not work: If inbound and outbound are different (i.e. one is ACCEPT and other is REJECT) problem likely lies in Network ACL. Otherwise, the problem likely lies in either security group or in Network ACL.
+
+Enable ELB's access logs to capture detailed information about requests.
+
+EC2's basic monitoring has 5-min interval (default). Enable detailed monitoring for 1-min interval (can be done after launch), then you can use Cloudwatch to perform analysis.
+
+Cloudwatch services: Events, Logs
+
+Cloudwatch Logs: Monitor, store, and access your log files (Cloudwatch Subscriptions: for real time processing)
+
+Cloudwatch Events: Near real time stream of system events from AWS resources
+
+Cloudwatch Container Insights: Collects, aggregate, and summarize metrics and logs from container-ized apps
+
+Unified CloudWatch agent: collect internal system-level metrics (e.g. Swaputilization, memory usage) as custom metrics
+
+Standard resolution (default) has 1 min interval. Custom metrics can go to high resolution (1s), and their alarm can be triggered every 10s, 30s, or any multiple of 60s.
+
+Cloudwatch instance recovery: Cloudwatch **alarm** for system status check (StatusCheckFailed_System metric), and set it to do an action named EC2 Instance Recovery. Everything (ebs, ips, placement group etc) remains same but instance store gets wiped out.
+
+### CloudTrail
+
+In console you can view events since last 90 days.
+
+You cannot use Cloudtrail to debug and trace data  across accounts, though you can consolidate log files from multiple accounts in a single bucket. 
+
+Event types. By default, it logs only management events:
+* Management events (**control plane operations**): management operations that are performed on resources in your account (e.g. security config, routing, registering new device, log API operations)
+* Data events (**data plane operations**): resource operations performed on or within a resource (e.g. S3 object level API)
+* Insight events: capture unusual API call rate or error rate activity in your account. If enabled and detects an unusual activity, then insights events are logged
+
+
+## Networking & Content Delivery
 
 ### Virtual Private Cloud
 
@@ -282,6 +261,28 @@ BTW, following is allowed too:
 Route 53 doesn't charge for Alias queries to AWS resources, but charges for CNAME queries.
 
 After updating a record, user may be directed to the old target because of TTL (time to live)
+
+
+### Cloudfront and Global Accelerator
+
+Cloudfront (CF) can serve both static and dynamic content (e.g. video stream, APIs), but it may not be a good fit for highly dynamic and frequently changing content. Remember that S3 is not a good fit for dynamic content. Cloudfront + S3 can be cheaper, faster and more secure than delivering directly form S3. And to serve S3 static webiste thorugh HTTPS, you need to use CF.
+
+Cloudfront custom origin can be S3 static website, ALB, Lambda, or any other HTTP server (e.g. onprem server). Custom origins must be publicly accessible. CloudFront can route to multiple origins based on the content type. For HA and failover, use an origin group with primary and secondary origins.
+
+Points of presence (POP) skips regional edge case for:
+* Proxy HTTP methods (PUT, POST, PATCH, OPTIONS, and DELETE)
+* Dynamic requests, as determined at request time
+* when origin S3 bucket and optimal regional edge cache are in the same region
+
+Signed url serve individual files (e.g. paid content, dynamic generated url), while signed cookie serve multiple files.
+
+With Lambd@Edge, you can authenticate users at edge location or compress files to reduce data transfer cost.
+
+Field-level encryption: encrypt at edge, decrypted only by target app
+
+Cloudfront supports HTTP(s) and WebSocket. It can't expose static public IP. Cloudfront is better for spiked traffic than Global Accelerator.
+
+Global Accelerator (GA): For TCP, UDP (gaming), IoT (MQTT), VoIP, and HTTP use cases that require static IP addresses or deterministic, fast regional failover. It's more expensive than CF. It uses same network as CF so it provides the same latency.
 
 
 ## Storage
