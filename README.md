@@ -1,5 +1,19 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+## Preface 
+
+Despite having few years of hands-on experience, I failed most of practice exams: they examine not only your architectural knowledge, but also come up with a couple of trick questions that require prior knowledge (it's hard to guess them). I consolidated all tricky points that encountered from various sources*  , mastered them with Quizlet flashcards and managed to pass the real exam in my first attempt. Here you go.
+
+I tried to avoid repetition, but often sections overlap. I recommend you going through it all at least for once. The list is not exhaustive, and you need to have prior good knowledge of AWS.  If you are a beginner, I recommend you to take a full course, then go through this list, then take few practice exams to solidify your knowledge.
+
+Any feedback / ocntribution is highly welcomed.
+
+`*` Special thanks to following Udemy courses for their great work:
+* Practice Exams | AWS Certified Solutions Architect Associate by Stephane Maarek
+* AWS Certified Solutions Architect Associate Practice Exams by Neal Davis
+
+
+
 ## Integration 
 
 ### Simple Notification Service: 
@@ -8,13 +22,13 @@ pub-sub model, passively pushing message. Ordered only in FIFO. No buffer (SNS +
 
 Supported:
 * transport protocols: HTTP(S), Email/Email-JSON, SQS, SMS
-*subscribers: above list, mobile push, Lambda, Kinesis Data Firehose (not KDS)
+* subscribers: above list, mobile push, Lambda, Kinesis Data Firehose (not KDS)
 
 S3 cannot directly write data into SNS (can send only events). To stream existing files and updates from S3 to KDS, you cna use DMS.
 
 ### Simple Queue Service
 
-Apps poll at their comfort. Good to **decouple app components**. At least once delivery without ordering, wheras, FIFO does exactly once delivery with ordering (To scale, use group ID). Provides automatic scaling at read time. Supports batching and buffering (SNS + SQS fan-out pattern). Stores message for 14 days. There can be multiple consumers per queue, but message can be consumed by one consumer at a time. SQS doesn't integrate directly with 3rd party SaaS.
+Apps poll at their comfort. Good to **decouple app components**. At least once delivery without ordering, wheras, FIFO does exactly once delivery with ordering (To scale, use group ID). Provides automatic scaling at read time (it is **serverless**). Supports batching and buffering (SNS + SQS fan-out pattern). Stores message for 14 days. There can be multiple consumers per queue, but message can be consumed by one consumer at a time. SQS doesn't integrate directly with 3rd party SaaS.
 
 Options to set delay:
 * Delay Queues (max 15 min): message is hidden when it is first added to the queue (i.e. it's invisible to consumers) - DelaySeconds parameter
@@ -40,7 +54,7 @@ SQS + Auto Scaling Group (with target tracking policy): dynamical scaling based 
 
 Kinesis Data Firehose is a near real-time streaming ETL and **the easiest way to load streaming data** into data stores and analytics tools, eg. S3, Redshift, Elasticsearch/Opensearch, HTTP endpoint. Kinesis Data Stream (KDS) can't directly send data to the mentioned destinations; it needs Firehose in between. Firehose is a fully managed scaling, no administration is needed. It does't support replay but supports batching and buffering (KDS is opposite).  Retention period max 24h.
 
-Kinesis Data Streams is **real-time processing** of streaming data. It supports replay, orderly set of records, and multiple consumers in parallel. A stream has +1 shards. KDS segregates stream’s data records into shards, using partition key associated with each data record. Producer push and consumer pulls data. There is at least once delivery. KDS requires manual scaling of shards. It doesn't support batching nor buffering. It can store data for up to 365 days. Enhanced-fanout provides dedicated read throughput for each consumer.
+Kinesis Data Streams is **real-time processing** of streaming data. It supports **replay, orderly set of records, and multiple consumers in parallel**. A stream has +1 shards. KDS segregates stream’s data records into shards, using partition key associated with each data record. Producer push and consumer pulls data. There is at least once delivery. KDS **requires manual scaling of shards**. It doesn't support batching nor buffering. It can store data for up to 365 days. Enhanced-fanout provides dedicated read throughput for each consumer.
 
 Remember that KDS can only be a source to Firehose but not a destinaiton. In KDS-Firehose model, Firehose’s PutRecord(Batch) operations are disabled and Kinesis Agent cannot write to Firehose directly. Instead, it needs to use KDS's PutRecord(s) operations, then KDS sends data to Firehose.
 
