@@ -284,11 +284,11 @@ How to secure following architectures and block certain IPs:
 * NLB + EC2:  NLB does't have SG nor terminates connection, and EC2 gets client's IP. SG can't block (it can only allow), so use NACL to block IPs.
 
 
-### Storage
+## Storage
 
 Storage gateway: unlimited storage to on-prem:
 * S3 File Gateway: NFS and SMB protocols, integrates with AD.
-* FSx File Gateway: SMB protocl, stores on Windows File server Server (not S3), integrates with AD
+* FSx File Gateway: SMB protocol, stores on Windows File server Server (not S3), integrates with AD
 * Tape Gateway: iSCSI virtual tape library (VTL) interface. Storage on S3, can be transitioned to Glacier/Deep Archive
 * Volume Gateway: block storage (EBS snapshot), iSCSI protocol. Stores on S3 but data is not directly accessible. Two modes:
   1. Cached: Primary data stored on s3, frequently access data cached locally
@@ -475,6 +475,7 @@ Fastest way to move large amount of data (in order):
 3. Internet / VPN: good use case if you have immediate need and low to modest bandwidth requirements. Aas a rule of thumb, remember that transfering 100 TB over 50 Mbit/s connection takes around 180 days.
 
 
+## Compute 
 ### Containers
 
 Fargate can intergate with both EKS and ECS, and provides serverless orchestration. ECS + EC2 is not serverless, though it provides access to underlying OS (unlike Fargate)
@@ -695,8 +696,9 @@ Invocation:
 * Poll-based: Sync invocation, retry based on data expiration in data source. e.g. Kinesis, SQS, DynamoDB Streams
 In async invocation, DLQ has to be on Lambda side. In (Lambda + SQS), (Lambda + SNS), (Lambda + S3 event) scenarios, DLQ must be set on SQS, Lambda, Lambda respectively.
 
-### Database Types
+## Database
 
+Types:
 * key-value : Only Dynamodb, Millisecond latency. For high-traffic web applications
 * In-memory: ElastiCache, sub-millisecond latency. Caching. For session management, gaming leaderboards, geospatial applications
 * Graph: Amazon Neptune, for fraud detection, social networking, recommendation engines. 
@@ -768,7 +770,7 @@ To have in-transit encrypted connection with an already encrypted RDS/Aurora dat
 
 In encrypted instances, all logs, backups, and snapshots are encrypted. 
  
-### Security
+## Security
 
 GuardDuty: continuous threat and anomaly detection for AWS accounts, workloads (EC2, EKS), and data stored in **Amazon S3**. Protects against **cryptocurrency mining**. It detect account and bucket **compromises**. Suspending GuardDuty stops the service from analyzing data but doesn't delete findings nor configs. Disabling GuardDuty deletes its data and configs. Data sources: CloudTrail Events, VPC Flow logs and DNS Logs.
 
