@@ -1,19 +1,16 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
-### AWS Organizations
+## Integration 
 
-Service control policies (SCP) affect only member accounts (its IAM users, roles, and root user) and not management account. Any account has only those permissions permitted by every parent above it (either implicit or explicit `Deny` will restrict access). SCPs do not affect service-linked role
+### Simple Notification Service: 
 
-Organization trail: create a new trail in CloudTrail from within the management account with the organization trails option enabled. Member accounts can see the trail but can't modify or delete it. Nor they have access to log files in the S3 bucket.
+pub-sub model, passively pushing message. Ordered only in FIFO. No buffer (SNS + SQS fan-out pattern allows buffering). SNS doesn't directly integrate with 3rd party SaaS. 
 
-To centrally manage and configure firewall rules use AWS Firewall Manager.
+Supported:
+* transport protocols: HTTP(S), Email/Email-JSON, SQS, SMS
+*subscribers: above list, mobile push, Lambda, Kinesis Data Firehose (not KDS)
 
-Consolidated billing enables tracking, combined usage and volume discount, at no additional fee and with only one bill through management account.
-
-To migrate an account to another Organization: use console, no need to create a new account in the destination Org. Resources will remain under the control of the migrated account. You must have root or IAM access to both the member and master accounts. Here are the steps to follow: 
-1. Remove the member account from the old organization 
-2. Send an invite to the member account from the new Organization 
-3. Accept the invite to the new organization from the member account
+S3 cannot directly write data into SNS (can send only events). To stream existing files and updates from S3 to KDS, you cna use DMS.
 
 ### Simple Queue Service
 
@@ -38,17 +35,6 @@ Polling controls API call time and retry behaviour from consumer’s side:
 * Long polling: queries all servers, SQS responds as soon as a msg is available. If polling wait time expires, SQS sends empty response. It reduces (false) empty responses, reduces latency, increases efficiency, reduces cost and returns msg as soon as they become available.
 
 SQS + Auto Scaling Group (with target tracking policy): dynamical scaling based on backlog per instance.
-
-### Simple Notification Service: 
-
-pub-sub model, passively pushing message. Ordered only in FIFO. No buffer (SNS + SQS fan-out pattern allows buffering). SNS doesn't directly integrate with 3rd party SaaS. 
-
-Supported:
-* transport protocols: HTTP(S), Email/Email-JSON, SQS, SMS
-*subscribers: above list, mobile push, Lambda, Kinesis Data Firehose (not KDS)
-
-S3 cannot directly write data into SNS (can send only events). To stream existing files and updates from S3 to KDS, you cna use DMS.
-
 
 ### Kinesis
 
@@ -894,3 +880,17 @@ Amazon Glue: ETL service. It **requires significant coding efforts**. You can wr
 
 EMR: MapReduce, big data workloads such as Spark, Hive, Hadoop. EMR requires **infra management and significant coding effort**.
 
+### AWS Organizations
+
+Service control policies (SCP) affect only member accounts (its IAM users, roles, and root user) and not management account. Any account has only those permissions permitted by every parent above it (either implicit or explicit `Deny` will restrict access). SCPs do not affect service-linked role
+
+Organization trail: create a new trail in CloudTrail from within the management account with the organization trails option enabled. Member accounts can see the trail but can't modify or delete it. Nor they have access to log files in the S3 bucket.
+
+To centrally manage and configure firewall rules use AWS Firewall Manager.
+
+Consolidated billing enables tracking, combined usage and volume discount, at no additional fee and with only one bill through management account.
+
+To migrate an account to another Organization: use console, no need to create a new account in the destination Org. Resources will remain under the control of the migrated account. You must have root or IAM access to both the member and master accounts. Here are the steps to follow: 
+1. Remove the member account from the old organization 
+2. Send an invite to the member account from the new Organization 
+3. Accept the invite to the new organization from the member account
