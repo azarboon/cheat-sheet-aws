@@ -314,7 +314,7 @@ SSD-backed EBS volumes:
 * io1 / io2 (Provisioned IOPS): 50 IOPS/GB, 64,000 IOPS/volume. Supports multi-attach. To maximize performance, use them with EBS-optimized EC2 instances.
 * io2 Block Express: Max iops 256,000, supports multi-attach, sub-millisecond latency.
 
-In PIOPS and gp3 volumes, size and performance are independent (can be changed independently). In gp2, they are linked. 
+In io1, io2 and gp3 volumes, size and performance are independent (can be changed independently). In gp2, they are linked. 
 
 HDD-backed EBS volumes:
 * Can't be used as boot volume.
