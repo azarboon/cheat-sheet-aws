@@ -362,83 +362,6 @@ Invocation:
 * Poll-based: Sync invocation, retry based on data expiration in data source. e.g. Kinesis, SQS, DynamoDB Streams
 In async invocation, DLQ has to be on Lambda side. In (Lambda + SQS), (Lambda + SNS), (Lambda + S3 event) scenarios, DLQ must be set on SQS, Lambda, Lambda respectively.
 
-
-### Simple Storage Service
-
-
-S3 is a regional service, buckets are defined at regional level, but console is global.
-
-S3 Select: retrieve only subset of data using SQL
-
-By default, an S3 object is owned by the AWS account that uploaded it. So the S3 bucket owner will not implicitly have access to the objects written by another account.
-
-S3 storage class analysis only provides recommendations for Standard to Standard IA classes.
-
-All storage classes offer (11 9's) durability, but S3 One Zone-IA can get destroyed in case of AZ destruction. 
-
-Replication:
-* Both source and destination buckets must have versioning enabled. 
-* Once enabled, replication copies only newly created objects. To copy existing objects, use S3 sync command. If the command fails, you can rerun it without duplication. 
-
-Logs:
-* CloudTrail logs: detailed API tracking for bucket-level and object-level operations
-* S3 Server access logs: object-level operations, detailed records of requests for audit purpose, help you learn your customer base and understand your S3 bill
-
-Optimize performance
-* To improve performance **within** datacenter, you can use ElastiCache + S3; it enables sub-millisecond latency, high throughput, lower retrieval cost from S3. But to get media closer to user, use Cloudfront.
-* Multi-part upload for files > 100 MB and up to 5TB. 
-* S3 Transfer Acceleration (S3TA) for files more than 1 GB; for less than 1 GB, use Cloudfront PUT/POST. S3TA charges only for accelerated transfers (not for failed attempts)
-* s3 byte-range fetche: parallelize GETs and transferg only the specified portion of the object
-* Cloudfront + S3: cheaper, faster and more secure than delivering directly form S3
-* You can scale read & write performance N times by using N prefixes in parallel.
-
-Locking:
-* S3 Object Lock: prevents objects from being deleted or overwritten for a fixed amount of time or indefinitely. In two ways: retention period and legal hold. An object version can have both, either or neither of them. You can define retention period either explicitly ("Retain Until Date" parameter) or through a bucket default setting (need to specify duration). Different versions of an object can have different retention modes and periods. Legal Hold provides same protection but remains in effect until removed. 
-* Vault Lock is only for Glacier and not for S3
-
-
-Versioning
-* In a versioned bucket, DELETE operation only inserts a delete marker (the marker becomes current version). S3 Replication can replicate the markers. To automate recovery of the objects, you can transition "noncurrent versions" of objects. 
-* To permanently delete versioned object, you must use DELETE Object versionId. Similarly, life cycle rules can expire current object versions or permanently remove noncurrent object versions.
-* S3 always returns the latest version of an object.
-* If a bucket already has files, after enabling versioning, the existing files will have version Null.
-* In a versioned bucket, sync command copies only the current version of the object. 
-* Once versioning is enabled, you can never reverse it, you can just suspend it.
-
-Access control:
-* Bucket policy: cross-account access, when IAM Policy size limit is a constraint, to enforce encryption at upload, to grant public access, to enforce Multi-factor authentication. It provides user and account level access, and applies to all of the objects within a single bucket.
-  - To enforce encryption at upload time: create a policy that denies any S3 Put request that does not include the x-amz-server-side-encryption header ("AES256" value for S3-managed keys, "aws:kms" value for AWS KMS–managed keys)
-  - To restrict access to a specific URL use "aws:referer". This is preferred over IP-based restriction.
-* Access Control List: legacy. 
-* IAM: It's centralized and easier to manage. Grants access only to users within your aws account (not account level).
-  - To grant folder-level permission to many users: create an IAM policy that grants folder-level permission (using policy variables), attach the policy to a group, then add users to the group.
-
-Latency:
-* Glacier Instant Retrieval: milliseconds,
-* Glacier Flexible Retrieval: minutes or hours,
-* Glacier Deep Archive: hours (and no expedited mode)
-
-Designed availability:
-* 99.5: One Zone IA
-* 99.9: Intelligent-Tiering, Standard IA, Glacier Instant
-* 99.99: Standard, Glacier Deep Archive, Glacier Flexible
-
-Availability SLA:
-* 99.9: Standard, Glacier Deep Archive
-* Other classes: 99%
-
-Minimum storage:
-* Standard IA, One Zone IA charge for min 30 days
-* Glacier (instant and flexible retrieval) charges for min 90 days
-* Glacier Deep Archive charges for 180 days
-* Intelligent-Tiering has no min storage duration, but monitors access pattern for at least 30 days to move objects. Also it charges extra for monitoring.
-
-Transition between classes:
-* Standard -> Standard IA -> Intelligent -> One Zone IA -> Glacier Instant -> Glacier Flexible -> Deep Archive
-* You can NOT transition into S3 Standard (only out of)
-* You can NOT transition from One Zone-IA to the Intelligent-Tiering, Standard-IA, or Glacier Instant Retrieval.
-* Before you transition objects from the S3 Standard or S3 Standard-IA storage classes to S3 Standard-IA or S3 One Zone-IA, you must store them at least 30 days in the S3 Standard storage class. However, you can transfer to other classes e.g. Deep Archive after one day being in Standard.
-
 ### Simple Queue Service
 
 Apps poll at their comfort. Good to **decouple app components**. At least once delivery without ordering, wheras, FIFO does exactly once delivery with ordering (To scale, use group ID). Provides automatic scaling at read time. Supports batching and buffering (SNS + SQS fan-out pattern). Stores message for 14 days. There can be multiple consumers per queue, but message can be consumed by one consumer at a time. SQS doesn't integrate directly with 3rd party SaaS.
@@ -481,45 +404,6 @@ Kinesis Data Firehose is a near real-time streaming ETL and **the easiest way to
 Kinesis Data Streams is **real-time processing** of streaming data. It supports replay, orderly set of records, and multiple consumers in parallel. A stream has +1 shards. KDS segregates stream’s data records into shards, using partition key associated with each data record. Producer push and consumer pulls data. There is at least once delivery. KDS requires manual scaling of shards. It doesn't support batching nor buffering. It can store data for up to 365 days. Enhanced-fanout provides dedicated read throughput for each consumer.
 
 Remember that KDS can only be a source to Firehose but not a destinaiton. In KDS-Firehose model, Firehose’s PutRecord(Batch) operations are disabled and Kinesis Agent cannot write to Firehose directly. Instead, it needs to use KDS's PutRecord(s) operations, then KDS sends data to Firehose.
-
-
-### Elastic Block Store and Instance store
-
-Instance store: can be root volume, offers very low latency, supports millions of IOPS (>256,000), offers temporary storage for frequently changed data or data that is  replicated across a fleet of instances, such as a load-balanced pool of web servers. It's included as part of instance usage cost (so it's more cost effective than Proviisoned IOPS volumes)
-
-SSD-backed EBS volumes:
-* All of them can be used as boot volume.
-* gp2 / gp3: 3 IOPS/GB, 16,000 IOPS/volume
-* io1 / io2 (Provisioned IOPS): 50 IOPS/GB, 64,000 IOPS/volume. Supports multi-attach. To maximize performance, use them with EBS-optimized EC2 instances.
-* io2 Block Express: Max iops 256,000, supports multi-attach, sub-millisecond latency.
-
-In PIOPS and gp3 volumes, size and performance are independent (can be changed independently). In gp2, they are linked. 
-
-HDD-backed EBS volumes:
-* Can't be used as boot volume.
-* low cost.
-* st1 (throuput optimized): 500 IOPS/volume but no SLA. 
-* sc1 (cold storage): 250 IOPS/volume but no SLA
-
-Unlike instance stores, EBS volumes can be added to running instance.
-
-Block device mapping supports EBS volumes and instance store. 
-
-RAID 0 to aggregate performance, RAID 1 to increase redundancy (can apply to both EBS volumes and instance store).
-
-Root EBS volumes are by default deleted upon EC2's termination (unlike non-root volumes). Instance store gets deleted upon failure or termination. 
-
-Encryption is supported by all EBS volume types (at rest and in transit). Encrypted and unencrypted volumes have same IOPS performance. All instance families support encryption, but not all instance types.
-
-You can have encrypted and unencrypted EBS volumes attached to an instance at the same time.
-
-You can't directly share an encrypted Amazon EBS volume with another AWS account (need to use snapshot). Snapshots are constrained to the Region in which they were created. To share a snapshot with another Region, copy the snapshot to that Region and then share the copy. 
-
-To share an encrypted snapshot with another account: share the custom key and encrypted snapshot (by modifying the permissions). The receiving account must copy the snapshot before they can then create volumes from the snapshot.
-
-You can share snapshot that are encrypted with customer managed key (not with default AWS keys).
-
-Encryption keys used by an Amazon EBS volume can't be changed. However, you can create a snapshot of the volume and then use the snapshot to create a new, encrypted copy of the volume. While creating the new volume, specify the new encryption key.
 
 
 ### Cloudfront and Global Accelerator
@@ -639,6 +523,45 @@ Multi-AZ: EFS and FSx Windows
 * SAN is a **block-storage**, works with ISCSI and Fibre Channel protocols. Possible desitnaiton is EBS.
 * S3 is a **object storage**, exposes data through a RESTfull API that can be accessed from anywhere. S3 is not a destination for file systems nor can be mounted on EC2 instances. 
 
+### Elastic Block Store and Instance store
+
+Instance store: can be root volume, offers very low latency, supports millions of IOPS (>256,000), offers temporary storage for frequently changed data or data that is  replicated across a fleet of instances, such as a load-balanced pool of web servers. It's included as part of instance usage cost (so it's more cost effective than Proviisoned IOPS volumes)
+
+SSD-backed EBS volumes:
+* All of them can be used as boot volume.
+* gp2 / gp3: 3 IOPS/GB, 16,000 IOPS/volume
+* io1 / io2 (Provisioned IOPS): 50 IOPS/GB, 64,000 IOPS/volume. Supports multi-attach. To maximize performance, use them with EBS-optimized EC2 instances.
+* io2 Block Express: Max iops 256,000, supports multi-attach, sub-millisecond latency.
+
+In PIOPS and gp3 volumes, size and performance are independent (can be changed independently). In gp2, they are linked. 
+
+HDD-backed EBS volumes:
+* Can't be used as boot volume.
+* low cost.
+* st1 (throuput optimized): 500 IOPS/volume but no SLA. 
+* sc1 (cold storage): 250 IOPS/volume but no SLA
+
+Unlike instance stores, EBS volumes can be added to running instance.
+
+Block device mapping supports EBS volumes and instance store. 
+
+RAID 0 to aggregate performance, RAID 1 to increase redundancy (can apply to both EBS volumes and instance store).
+
+Root EBS volumes are by default deleted upon EC2's termination (unlike non-root volumes). Instance store gets deleted upon failure or termination. 
+
+Encryption is supported by all EBS volume types (at rest and in transit). Encrypted and unencrypted volumes have same IOPS performance. All instance families support encryption, but not all instance types.
+
+You can have encrypted and unencrypted EBS volumes attached to an instance at the same time.
+
+You can't directly share an encrypted Amazon EBS volume with another AWS account (need to use snapshot). Snapshots are constrained to the Region in which they were created. To share a snapshot with another Region, copy the snapshot to that Region and then share the copy. 
+
+To share an encrypted snapshot with another account: share the custom key and encrypted snapshot (by modifying the permissions). The receiving account must copy the snapshot before they can then create volumes from the snapshot.
+
+You can share snapshot that are encrypted with customer managed key (not with default AWS keys).
+
+Encryption keys used by an Amazon EBS volume can't be changed. However, you can create a snapshot of the volume and then use the snapshot to create a new, encrypted copy of the volume. While creating the new volume, specify the new encryption key.
+
+
 ### Elastic File System
 
 POSIX compliant, Supports only NFS protocol and Linux. Supports multi-AZ. 
@@ -661,6 +584,82 @@ Access control:
 * IAM: to control who can administer file system 
 * EFS Access Point: App level access to files and directories using POSIX compliant user & group permission.
 * Security Group: acts like a firewall to contorl trafifc flow
+
+### Simple Storage Service
+
+
+S3 is a regional service, buckets are defined at regional level, but console is global.
+
+S3 Select: retrieve only subset of data using SQL
+
+By default, an S3 object is owned by the AWS account that uploaded it. So the S3 bucket owner will not implicitly have access to the objects written by another account.
+
+S3 storage class analysis only provides recommendations for Standard to Standard IA classes.
+
+All storage classes offer (11 9's) durability, but S3 One Zone-IA can get destroyed in case of AZ destruction. 
+
+Replication:
+* Both source and destination buckets must have versioning enabled. 
+* Once enabled, replication copies only newly created objects. To copy existing objects, use S3 sync command. If the command fails, you can rerun it without duplication. 
+
+Logs:
+* CloudTrail logs: detailed API tracking for bucket-level and object-level operations
+* S3 Server access logs: object-level operations, detailed records of requests for audit purpose, help you learn your customer base and understand your S3 bill
+
+Optimize performance
+* To improve performance **within** datacenter, you can use ElastiCache + S3; it enables sub-millisecond latency, high throughput, lower retrieval cost from S3. But to get media closer to user, use Cloudfront.
+* Multi-part upload for files > 100 MB and up to 5TB. 
+* S3 Transfer Acceleration (S3TA) for files more than 1 GB; for less than 1 GB, use Cloudfront PUT/POST. S3TA charges only for accelerated transfers (not for failed attempts)
+* s3 byte-range fetche: parallelize GETs and transferg only the specified portion of the object
+* Cloudfront + S3: cheaper, faster and more secure than delivering directly form S3
+* You can scale read & write performance N times by using N prefixes in parallel.
+
+Locking:
+* S3 Object Lock: prevents objects from being deleted or overwritten for a fixed amount of time or indefinitely. In two ways: retention period and legal hold. An object version can have both, either or neither of them. You can define retention period either explicitly ("Retain Until Date" parameter) or through a bucket default setting (need to specify duration). Different versions of an object can have different retention modes and periods. Legal Hold provides same protection but remains in effect until removed. 
+* Vault Lock is only for Glacier and not for S3
+
+
+Versioning
+* In a versioned bucket, DELETE operation only inserts a delete marker (the marker becomes current version). S3 Replication can replicate the markers. To automate recovery of the objects, you can transition "noncurrent versions" of objects. 
+* To permanently delete versioned object, you must use DELETE Object versionId. Similarly, life cycle rules can expire current object versions or permanently remove noncurrent object versions.
+* S3 always returns the latest version of an object.
+* If a bucket already has files, after enabling versioning, the existing files will have version Null.
+* In a versioned bucket, sync command copies only the current version of the object. 
+* Once versioning is enabled, you can never reverse it, you can just suspend it.
+
+Access control:
+* Bucket policy: cross-account access, when IAM Policy size limit is a constraint, to enforce encryption at upload, to grant public access, to enforce Multi-factor authentication. It provides user and account level access, and applies to all of the objects within a single bucket.
+  - To enforce encryption at upload time: create a policy that denies any S3 Put request that does not include the x-amz-server-side-encryption header ("AES256" value for S3-managed keys, "aws:kms" value for AWS KMS–managed keys)
+  - To restrict access to a specific URL use "aws:referer". This is preferred over IP-based restriction.
+* Access Control List: legacy. 
+* IAM: It's centralized and easier to manage. Grants access only to users within your aws account (not account level).
+  - To grant folder-level permission to many users: create an IAM policy that grants folder-level permission (using policy variables), attach the policy to a group, then add users to the group.
+
+Latency:
+* Glacier Instant Retrieval: milliseconds,
+* Glacier Flexible Retrieval: minutes or hours,
+* Glacier Deep Archive: hours (and no expedited mode)
+
+Designed availability:
+* 99.5: One Zone IA
+* 99.9: Intelligent-Tiering, Standard IA, Glacier Instant
+* 99.99: Standard, Glacier Deep Archive, Glacier Flexible
+
+Availability SLA:
+* 99.9: Standard, Glacier Deep Archive
+* Other classes: 99%
+
+Minimum storage:
+* Standard IA, One Zone IA charge for min 30 days
+* Glacier (instant and flexible retrieval) charges for min 90 days
+* Glacier Deep Archive charges for 180 days
+* Intelligent-Tiering has no min storage duration, but monitors access pattern for at least 30 days to move objects. Also it charges extra for monitoring.
+
+Transition between classes:
+* Standard -> Standard IA -> Intelligent -> One Zone IA -> Glacier Instant -> Glacier Flexible -> Deep Archive
+* You can NOT transition into S3 Standard (only out of)
+* You can NOT transition from One Zone-IA to the Intelligent-Tiering, Standard-IA, or Glacier Instant Retrieval.
+* Before you transition objects from the S3 Standard or S3 Standard-IA storage classes to S3 Standard-IA or S3 One Zone-IA, you must store them at least 30 days in the S3 Standard storage class. However, you can transfer to other classes e.g. Deep Archive after one day being in Standard.
 
 
 ### Elastic Compute Cloud
