@@ -85,59 +85,6 @@ Amazon Glue: ETL service. It **requires significant coding efforts**. You can wr
 
 EMR: MapReduce, big data workloads such as Spark, Hive, Hadoop. EMR requires **infra management and significant coding effort**.
 
-
-### Containers
-
-Fargate can intergate with both EKS and ECS, and provides serverless orchestration. ECS + EC2 is not serverless, though it provides access to underlying OS (unlike Fargate)
-
-ALB's Dynamic Port Mapping redirects traffic to multiple ECS Tasks running on the same ECS Container instance.
-
-Fargate is charged based on vCPU and memory resources used. ECS EC2 charges based on used resources (e.g. EC2 and EBS)
-
-To troubleshoot disconnected ECS container instances: Verify that ECS agent is installed and running, Docker daemon is running, and that the IAM instance profile has the necessary permissions applied. Remember that Amazon ECS optimized AMI already contains ECS container agent.
-
-ECS Container instance roles give permission to all the apps (ECS agent and docker daemon use that). To have fine grain permissions, use IAM Task Role. 
-
-
-### Elastic Load Balancer
-
-ELB does not have any caching capability. ELB is responsible for distributing traffic and ASG responsible for placing & terminating in-stances. 
-
-Let's say AZ1 has 4 targets and AZ2 has 6 targets. If ELB's cross-zone load balancing is:
-* Enabled: each target receives 10% of traffic
-* Disabled: Each AZ1’s target receives 12.5% and AZ2’s target receives 8.3% of traffic.
-
-Minimum 2 AZs are required for high availability (not 3)
-
-Supports multiple TLS certificates using Server Name Indication (SNI)
-
-Enable ELB access logs to capture detailed information about requests.
-
-Routing mechanisms for target types:
-* Instance id: uses primary private IP address 
-* IP address: uses any private IP address 
-
-Target IPs can be instances in peered VPCs, AWS resources that are addressed by IP and port, onpremise resources linked with Direct Connect or VPN.
-
-To attach instances in a private subnet to ELB: create a public subnet in SAME AZ, then associate PUBLIC subnet to the ELB. This also prevents direct connectivity to instances from Internet.
-
-Gateway Load Balancer: supports GENEVE protocol on port 6081
-
-#### Application Load Balancer
-
-Layer 7. Supports HTTP and HTTPS. Provides only static DNS. Weighted target group (weighted routing policy is for Route 53). Supported targets are instance id, IP, Lambda. If target group has no registered target, it returns `HTTP 503: Service unavailable`
-
-Supports authentication from corporate and OIDC compliant IdPs: using authentication action on a listener rule that integrates with Cognito **User Pools**.
-
-Does NOT do SSL passthrough, instead it terminates the first SSL connection on the ALB and then re-encrypt the traffic and connect to the EC2. To encryption in-transit: use HTTP listner, then install SSL certificates on the ALB and EC2 instances.
-
-In host-based routing, the rule `*.example.com` matches `test.example.com` but doesn't match `example.com`
-
-Has Security Group (SG) Associated rules:
-* Allows inbound traffic to load balancer’s listener port
-* Allows outbound traffic to instance's SG on instance's listener port as well as health check port
-
-
 #### Network Load Balancer
 
 Layer 4. Supports TCP, UDP and TLS. Provides static DNS and static IP. Doesn't have security group. Doesn't do connection termination (i.e. EC2 can access client's IP). Supported targets are instance id, IP and ALB. 
@@ -333,34 +280,6 @@ Unified CloudWatch agent: collect internal system-level metrics (e.g. Swaputiliz
 Standard resolution (default) has 1 min interval. Custom metrics can go to high resolution (1s), and their alarm can be triggered every 10s, 30s, or any multiple of 60s.
 
 Cloudwatch instance recovery: Cloudwatch **alarm** for system status check (StatusCheckFailed_System metric), and set it to do an action named EC2 Instance Recovery. Everything (ebs, ips, placement group etc) remains same but instance store gets wiped out.
-
-
-
-### Lambda
-
-Lambda by default has access to Internet. VPC-enabled lambda needs a NAT gateway (and its subject to routing rules). To connect to VPC-resources, Lambda needs subnet IDs and security group IDs
-
-Cloudwatch metrics track number of requests, latency per request, requests resulting in error.
-
-Supported runtimes: C#/.NET , Go, Java, Node.js, Python, Ruby
-
-To optimize performance: use provisioned capacity, optimize static initialization, change memory-settings (memory is proportional to vCPU). Reuse code / dependency with Lambda Layers.
-
-Lambda IAM role to access S3 bucket:
-* Same account: grant permission to role, verify there is no explicit deny in bucket policy
-* Different accounts: grant permissions on both role and bucket policy
-
-Limits:
-* Env variable size: 4 KB. 
-* Deployment through container image or zip file, max 50 or 250 MB respectivcely 
-* Disk (/tmp): 512 MB 
-* Max duration: 15 min (900s)
-
-Invocation:
-* synchronous: retry / error handling by invoker (nothing by default). e.g. API, ALB
-* Asynchronous: two retries (3 in total). Destination or DLQ for failed attempts. e.g. S3, SNS, SES
-* Poll-based: Sync invocation, retry based on data expiration in data source. e.g. Kinesis, SQS, DynamoDB Streams
-In async invocation, DLQ has to be on Lambda side. In (Lambda + SQS), (Lambda + SNS), (Lambda + S3 event) scenarios, DLQ must be set on SQS, Lambda, Lambda respectively.
 
 ### Simple Queue Service
 
@@ -661,6 +580,18 @@ Transition between classes:
 * You can NOT transition from One Zone-IA to the Intelligent-Tiering, Standard-IA, or Glacier Instant Retrieval.
 * Before you transition objects from the S3 Standard or S3 Standard-IA storage classes to S3 Standard-IA or S3 One Zone-IA, you must store them at least 30 days in the S3 Standard storage class. However, you can transfer to other classes e.g. Deep Archive after one day being in Standard.
 
+### Containers
+
+Fargate can intergate with both EKS and ECS, and provides serverless orchestration. ECS + EC2 is not serverless, though it provides access to underlying OS (unlike Fargate)
+
+ALB's Dynamic Port Mapping redirects traffic to multiple ECS Tasks running on the same ECS Container instance.
+
+Fargate is charged based on vCPU and memory resources used. ECS EC2 charges based on used resources (e.g. EC2 and EBS)
+
+To troubleshoot disconnected ECS container instances: Verify that ECS agent is installed and running, Docker daemon is running, and that the IAM instance profile has the necessary permissions applied. Remember that Amazon ECS optimized AMI already contains ECS container agent.
+
+ECS Container instance roles give permission to all the apps (ECS agent and docker daemon use that). To have fine grain permissions, use IAM Task Role. 
+
 
 ### Elastic Compute Cloud
 
@@ -737,6 +668,71 @@ Reservaiton options:
 * Regional reserved instance: Fixed 1 or 3 year commitment, no capacity reserved, provides billing discount
 * Savings plan: fixed 1 or 3 year commitment, no capacity reserved, provides billings discount
 
+
+### Elastic Load Balancer
+
+ELB does not have any caching capability. ELB is responsible for distributing traffic and ASG responsible for placing & terminating in-stances. 
+
+Let's say AZ1 has 4 targets and AZ2 has 6 targets. If ELB's cross-zone load balancing is:
+* Enabled: each target receives 10% of traffic
+* Disabled: Each AZ1’s target receives 12.5% and AZ2’s target receives 8.3% of traffic.
+
+Minimum 2 AZs are required for high availability (not 3)
+
+Supports multiple TLS certificates using Server Name Indication (SNI)
+
+Enable ELB access logs to capture detailed information about requests.
+
+Routing mechanisms for target types:
+* Instance id: uses primary private IP address 
+* IP address: uses any private IP address 
+
+Target IPs can be instances in peered VPCs, AWS resources that are addressed by IP and port, onpremise resources linked with Direct Connect or VPN.
+
+To attach instances in a private subnet to ELB: create a public subnet in SAME AZ, then associate PUBLIC subnet to the ELB. This also prevents direct connectivity to instances from Internet.
+
+Gateway Load Balancer: supports GENEVE protocol on port 6081
+
+#### Application Load Balancer
+
+Layer 7. Supports HTTP and HTTPS. Provides only static DNS. Weighted target group (weighted routing policy is for Route 53). Supported targets are instance id, IP, Lambda. If target group has no registered target, it returns `HTTP 503: Service unavailable`
+
+Supports authentication from corporate and OIDC compliant IdPs: using authentication action on a listener rule that integrates with Cognito **User Pools**.
+
+Does NOT do SSL passthrough, instead it terminates the first SSL connection on the ALB and then re-encrypt the traffic and connect to the EC2. To encryption in-transit: use HTTP listner, then install SSL certificates on the ALB and EC2 instances.
+
+In host-based routing, the rule `*.example.com` matches `test.example.com` but doesn't match `example.com`
+
+Has Security Group (SG). Associated rules:
+* Allows inbound traffic to load balancer’s listener port
+* Allows outbound traffic to instance's SG on instance's listener port as well as health check port
+
+
+### Lambda
+
+Lambda by default has access to Internet. VPC-enabled lambda needs a NAT gateway (and its subject to routing rules). To connect to VPC-resources, Lambda needs subnet IDs and security group IDs
+
+Cloudwatch metrics track number of requests, latency per request, requests resulting in error.
+
+Supported runtimes: C#/.NET , Go, Java, Node.js, Python, Ruby
+
+To optimize performance: use provisioned capacity, optimize static initialization, change memory-settings (memory is proportional to vCPU). Reuse code / dependency with Lambda Layers.
+
+Lambda IAM role to access S3 bucket:
+* Same account: grant permission to role, verify there is no explicit deny in bucket policy
+* Different accounts: grant permissions on both role and bucket policy
+
+Limits:
+* Env variable size: 4 KB. 
+* Deployment through container image or zip file, max 50 or 250 MB respectivcely 
+* Disk (/tmp): 512 MB 
+* Max duration: 15 min (900s)
+
+Invocation:
+* synchronous: retry / error handling by invoker (nothing by default). e.g. API, ALB
+* Asynchronous: two retries (3 in total). Destination or DLQ for failed attempts. e.g. S3, SNS, SES
+* Poll-based: Sync invocation, retry based on data expiration in data source. e.g. Kinesis, SQS, DynamoDB Streams
+In async invocation, DLQ has to be on Lambda side. In (Lambda + SQS), (Lambda + SNS), (Lambda + S3 event) scenarios, DLQ must be set on SQS, Lambda, Lambda respectively.
 
 ### Database Types
 
