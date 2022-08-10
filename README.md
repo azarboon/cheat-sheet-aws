@@ -416,6 +416,20 @@ Access control:
 * IAM: It's centralized and easier to manage. Grants access only to users within your aws account (not account level).
   - To grant folder-level permission to many users: create an IAM policy that grants folder-level permission (using policy variables), attach the policy to a group, then add users to the group.
 
+#### classes
+
+Transition between classes:
+* Standard -> Standard IA -> Intelligent -> One Zone IA -> Glacier Instant -> Glacier Flexible -> Deep Archive
+* You can NOT transition into S3 Standard (only out of)
+* You can NOT transition from One Zone-IA to the Intelligent-Tiering, Standard-IA, or Glacier Instant Retrieval.
+* Before you transition objects from the S3 Standard or S3 Standard-IA storage classes to S3 Standard-IA or S3 One Zone-IA, you must store them at least 30 days in the S3 Standard storage class. However, you can transfer to other classes e.g. Deep Archive after one day being in Standard.
+
+Minimum storage:
+* Standard IA, One Zone IA charge for min 30 days
+* Glacier (instant and flexible retrieval) charges for min 90 days
+* Glacier Deep Archive charges for 180 days
+* Intelligent-Tiering has no min storage duration, but monitors access pattern for at least 30 days to move objects. Also it charges extra for monitoring.
+
 Latency:
 * Glacier Instant Retrieval: milliseconds,
 * Glacier Flexible Retrieval: minutes or hours,
@@ -429,18 +443,6 @@ Designed availability:
 Availability SLA:
 * 99.9: Standard, Glacier Deep Archive
 * Other classes: 99%
-
-Minimum storage:
-* Standard IA, One Zone IA charge for min 30 days
-* Glacier (instant and flexible retrieval) charges for min 90 days
-* Glacier Deep Archive charges for 180 days
-* Intelligent-Tiering has no min storage duration, but monitors access pattern for at least 30 days to move objects. Also it charges extra for monitoring.
-
-Transition between classes:
-* Standard -> Standard IA -> Intelligent -> One Zone IA -> Glacier Instant -> Glacier Flexible -> Deep Archive
-* You can NOT transition into S3 Standard (only out of)
-* You can NOT transition from One Zone-IA to the Intelligent-Tiering, Standard-IA, or Glacier Instant Retrieval.
-* Before you transition objects from the S3 Standard or S3 Standard-IA storage classes to S3 Standard-IA or S3 One Zone-IA, you must store them at least 30 days in the S3 Standard storage class. However, you can transfer to other classes e.g. Deep Archive after one day being in Standard.
 
 
 ### Data migration
