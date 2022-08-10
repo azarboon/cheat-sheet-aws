@@ -1,5 +1,18 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Encryption
+
+By default, Key Management Service (KMS) enforces 30 days of waiting period before deleting a customer master key; key's status is "pending" during the time.
+
+#### S3
+
+* In client side encryption: Clients encrypts data and uploads the encrypted data to S3; S3 is not aware of the key.
+* In server side encryption, client requests Amazon to encrypt & decrypt the keys. It can be done with:
+  * S3-Managed Keys (SSE-S3): uses AES-256 and each object is en-crypted with a unique key. 
+  * KMS keys (SSE-KMS): Similar to SSE-S3 but has additional benefits; it separates permissions for KMS keys so enables additional protection and **audit** trail. 
+  * Customer-Provided Keys (SSE-C): customer manages the keys and Amazon S3 manages the encryption process.
+
+
 ### AWS Organizations
 
 Service control policies (SCP) affect only member accounts (its IAM users, roles, and root user) and not management account. Any account has only those permissions permitted by every parent above it (either implicit or explicit `Deny` will restrict access). SCPs do not affect service-linked role
@@ -34,7 +47,7 @@ AWS Batch: Efficiently supports multi-node parallel jobs, running a single jobs 
 
 Systems Manager: centralized end-to-end operational hub for hybrid cloud (viewing & automation). You can create logical groups of resources, view their config changes, API activity, compliance status etc. With Systems Manager’s Run Command you can manage configs and run ad-hoc commands remotely
 
-CloudFormation: maintain the state of the overall architecture. StackSet allows you to create stacks in multiple accounts and in multiple regions
+CloudFormation: maintain the **state** of the overall architecture. StackSet allows you to create stacks in multiple accounts and  regions
 
 AWS Config: evaluates the configurations and compliance of your resources and to remedy non-compliant resources. You can configure it to stream configuration changes an SNS topic. It can maintain a **history of resource configuration changes**
 
@@ -50,9 +63,9 @@ EventBridge: event-based service for **third-party SaaS** and AWS resources. Ena
 
 Amazon MQ: Similar to SQS, but used for **existing applications that are being migrated** into AWS. It supports AMQP, STOMP, MQTT and WebSocket.
 
-Amazon Glue: ETL service. It requires significant coding efforts. You can write transformed data in a compressed format.
+Amazon Glue: ETL service. It **requires significant coding efforts**. You can write transformed data in a compressed format.
 
-EMR: MapReduce, big data workloads such as Spark, Hive, Hadoop. EMR requires infra management and significant coding effort.
+EMR: MapReduce, big data workloads such as Spark, Hive, Hadoop. EMR requires **infra management and significant coding effort**.
 
 
 ### Containers
@@ -76,7 +89,7 @@ Let's say AZ1 has 4 targets and AZ2 has 6 targets. If ELB's cross-zone load bala
 * Enabled: each target receives 10% of traffic
 * Disabled: Each AZ1’s target receives 12.5% and AZ2’s target receives 8.3% of traffic.
 
-Min 2 AZs are required for high availability (not 3)
+Minimum 2 AZs are required for high availability (not 3)
 
 Supports multiple TLS certificates using Server Name Indication (SNI)
 
@@ -354,8 +367,8 @@ Logs:
 * S3 Server access logs: object-level operations, detailed records of requests for audit purpose, help you learn your customer base and understand your S3 bill
 
 Optimize performance
-* To improve performance WITHIN datacenter, you can use ElastiCache + S3; it enables sub-millisecond latency, high throughput, lower retrieval cost from S3. But to get media closer to user, use Cloudfront.
-* Multi-part upload: for files > 100 MB and up to 5TB. 
+* To improve performance **within** datacenter, you can use ElastiCache + S3; it enables sub-millisecond latency, high throughput, lower retrieval cost from S3. But to get media closer to user, use Cloudfront.
+* Multi-part upload for files > 100 MB and up to 5TB. 
 * S3 Transfer Acceleration (S3TA) for files more than 1 GB; for less than 1 GB, use Cloudfront PUT/POST. S3TA charges only for accelerated transfers (not for failed attempts)
 * s3 byte-range fetche: parallelize GETs and transferg only the specified portion of the object
 * Cloudfront + S3: cheaper, faster and more secure than delivering directly form S3
