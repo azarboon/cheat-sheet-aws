@@ -1,5 +1,18 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### CloudTrail
+
+In console you can view events since last 90 days.
+
+You cannot use Cloudtrail to debug and trace data  across accounts, though you can consolidate log files from multiple accounts in a single bucket. 
+
+Event types. By default, it logs only management events:
+* Management events (**control plane operations**): management operations that are performed on resources in your account (e.g. security config, routing, registering new device, log API operations)
+* Data events (**data plane operations**): resource operations performed on or within a resource (e.g. S3 object level API)
+* Insight events: capture unusual API call rate or error rate activity in your account. If enabled and detects an unusual activity, then insights events are logged
+
+
+
 ### Data migration
 
 DataSync: **automates and accelerates** (periodically, **no continous**) large amount of data between HDFS, self-managed object storage, Snowcone, S3, EFS, FSx. DataSync over Direct Connect provides the most reliable hybrid connectivity. DataSync supports **only NFS and SMB protocols and not ISCSI or tapes**. To migrate physical tapes use Storage Gateway - Tape Gateway.
