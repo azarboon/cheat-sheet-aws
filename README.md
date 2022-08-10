@@ -1,5 +1,26 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Security
+
+GuardDuty: continuous threat and anomaly detection for AWS accounts, workloads (EC2, EKS), and data stored in **Amazon S3**. Protects against **cryptocurrency mining**. It detect account and bucket **compromises**. Suspending GuardDuty stops the service from analyzing data but doesn't delete findings nor configs. Disabling GuardDuty deletes its data and configs. Data sources: CloudTrail Events, VPC Flow logs and DNS Logs.
+
+Amazon Macie: identify sensitive data stored on S3
+
+Inspector: automated and continual vulnerability management. Inspector is more about identifying vulnerabilities and evaluating against security best practices. It does **NOT** detect compromise.
+
+Web Applicaiton Firewall: can be deployed on ALB, API Gateway, Cloudfront. It helps against SQL injection and cross site scripting attacks.
+
+AWS Shield protects you from common network and transport layer DDoS attacks free of charge. AWS Shield Advanced does offer protection to resources outside of AWS. This should NOT cause unexpected spike in billing costs.
+
+SSM Parameter Store: can serve as a secrets store, but you must rotate the secrets yourself (no automation)
+
+Secrets Manager: secret rotation with built-in integration for RDS, Redshift, DocmentDB.
+
+CloudHSM: dedicated hardware security module to manage and store your encryption keys. It doesn't help with distribution of keys.
+
+AWS allows penetration for some of resources without prior authorization.
+
+
 ### CloudTrail
 
 In console you can view events since last 90 days.
