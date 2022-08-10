@@ -1,5 +1,23 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
+### Data migration
+
+DataSync: **automates and accelerates** (periodically, **no continous**) large amount of data between HDFS, self-managed object storage, Snowcone, S3, EFS, FSx. DataSync over Direct Connect provides the most reliable hybrid connectivity. DataSync supports **only NFS and SMB protocols and not ISCSI or tapes**. To migrate physical tapes use Storage Gateway - Tape Gateway.
+
+Transfer Family: Supports S3 and EFS. Supports FTP, SFTP, FTPS protocols. It's more expensive than DataSync.
+
+Database Migration Service: **continuous data replication with high availability**. Use it along with Schema Conversion Tool to handle handle **complex database configurations**
+* Supported sources: databases as well as S3. 
+* Supported target: databases, S3, Redis, Redshift, KDS, OpenSearch
+
+
+Snowball Edge Storage and Compute Optimized offer storage clustering. They can be managed through AWS OpsHub. Use Snowball devices when you need to quickly and securely transfer dozens of TBs (up to PB) of data.
+
+Fastest way to move large amount of data (in order):
+1. Snowball Edge: It's fast, cost effective and provides local processing. Compute Optimized provides 39.5 TB of storage (no SSD). Storage Optimized provides 80 TB of storage. Use Schema Conversion Tool (SCT) **to extract and load data locally** onto edge devices. Then you ship devices to AWS, and AWS automatically loads them into S3. Then, you can use Database Migration Service (DMS) to transfer data into target stores. Also remember that you can't directly copy data from Snowball Edge devices into AWS Glacier; instead Snowball -> S3 life cycle policy -> Glacier.
+2. Direct connect: It provides a **private connection** but needs few weeks for provisioning.
+3. Internet / VPN: good use case if you have immediate need and low to modest bandwidth requirements. Aas a rule of thumb, remember that transfering 100 TB over 50 Mbit/s connection takes around 180 days.
+
 ### Encryption
 
 By default, Key Management Service (KMS) enforces 30 days of waiting period before deleting a customer master key; key's status is "pending" during the time.
