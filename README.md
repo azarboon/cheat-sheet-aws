@@ -395,11 +395,6 @@ Optimize performance
 * Cloudfront + S3: cheaper, faster and more secure than delivering directly form S3
 * You can scale read & write performance N times by using N prefixes in parallel.
 
-Locking:
-* S3 Object Lock: prevents objects from being deleted or overwritten for a fixed amount of time or indefinitely. In two ways: retention period and legal hold. An object version can have both, either or neither of them. You can define retention period either explicitly ("Retain Until Date" parameter) or through a bucket default setting (need to specify duration). Different versions of an object can have different retention modes and periods. Legal Hold provides same protection but remains in effect until removed. 
-* Vault Lock is only for Glacier and not for S3
-
-
 Versioning
 * In a versioned bucket, DELETE operation only inserts a delete marker (the marker becomes current version). S3 Replication can replicate the markers. To automate recovery of the objects, you can transition "noncurrent versions" of objects. 
 * To permanently delete versioned object, you must use DELETE Object versionId. Similarly, life cycle rules can expire current object versions or permanently remove noncurrent object versions.
@@ -415,6 +410,17 @@ Access control:
 * Access Control List: legacy. 
 * IAM: It's centralized and easier to manage. Grants access only to users within your aws account (not account level).
   - To grant folder-level permission to many users: create an IAM policy that grants folder-level permission (using policy variables), attach the policy to a group, then add users to the group.
+
+#### Object Lock
+
+Object Lock prevents objects from being deleted or overwritten for a fixed amount of time or indefinitely. In two ways: retention period and legal hold. An object version can have both, either or neither of them. You can define retention period either explicitly ("Retain Until Date" parameter) or through a bucket default setting (need to specify duration). Different versions of an object can have different retention modes and periods. Legal Hold provides same protection but remains in effect until removed. 
+
+Object Lock provides two retention modes:
+* Governance: object version and its lock settings can be changed only by users who have special permissions
+* Compliance: object version and its lock settings can’t be changed by any user
+
+Vault Lock is only for Glacier and not for S3
+
 
 #### classes
 
@@ -451,17 +457,22 @@ DataSync: **automates and accelerates** (periodically, **no continous**) large a
 
 Transfer Family: Supports S3 and EFS. Supports FTP, SFTP, FTPS protocols. It's more expensive than DataSync.
 
-Database Migration Service: **continuous data replication with high availability**. Use it along with Schema Conversion Tool to handle handle **complex database configurations**
+Database Migration Service: **continuous data replication with high availability**. Use it along with Schema Conversion Tool to handle handle **complex database configurations**. To Increase migration performance: turn off backups and transaction loggings, use multiple tasks, choose a Multi-AZ instance.
 * Supported sources: databases as well as S3. 
 * Supported target: databases, S3, Redis, Redshift, KDS, OpenSearch
 
 
-Snowball Edge Storage and Compute Optimized offer storage clustering. They can be managed through AWS OpsHub. Use Snowball devices when you need to quickly and securely transfer dozens of TBs (up to PB) of data.
+
+Snowball Edge Storage Otimized (80 TB) and Compute Optimized (39.5 TB - no SSD) offer storage clustering. You can quickly and securely transfer dozens of TBs (up to PB) of data. They can be managed through AWS OpsHub. 
+
+Use **Schema Conversion Tool to extract and load data locally** onto edge devices. Then you ship devices to AWS, and AWS automatically loads them into S3. Then, you can use Database Migration Service (DMS) to transfer data into target stores. 
+
+You can't directly copy data from Snowball Edge devices into AWS Glacier; instead Snowball -> S3 life cycle policy -> Glacier.
 
 Fastest way to move large amount of data (in order):
-1. Snowball Edge: It's fast, cost effective and provides local processing. Compute Optimized provides 39.5 TB of storage (no SSD). Storage Optimized provides 80 TB of storage. Use Schema Conversion Tool (SCT) **to extract and load data locally** onto edge devices. Then you ship devices to AWS, and AWS automatically loads them into S3. Then, you can use Database Migration Service (DMS) to transfer data into target stores. Also remember that you can't directly copy data from Snowball Edge devices into AWS Glacier; instead Snowball -> S3 life cycle policy -> Glacier.
-2. Direct connect: It provides a **private connection** but needs few weeks for provisioning.
-3. Internet / VPN: good use case if you have immediate need and low to modest bandwidth requirements. Aas a rule of thumb, remember that transfering 100 TB over 50 Mbit/s connection takes around 180 days.
+1. Snowball Edge: It's fast, cost effective and provides local processing. The end-to-end time to transfer up to 80 TB of data into AWS with Snowball Edge is **approximately one week**.
+2. Direct connect: It provides a **private connection** (not encrypted) but needs few weeks for provisioning.
+3. Internet / VPN: good use case if you have **immediate need and low to modest bandwidth requirements**. Aas a rule of thumb: transfering 100 TB over 50 Mbit/s connection takes around 180 days.
 
 
 ## Compute 
@@ -743,6 +754,8 @@ Best practices: keep item size small (max 400 KB. Compress bigger objects or use
 
 Aurora Global Database: RPO of seconds, RTO of minutes. For fail-over, read replicas have to be manually promoted.
 
+Before creating an RDS read replica, firstly you must enable automatic backups on the source DB instance by setting the backup retention period to a value other than 0. 
+
 Read replicas have async replication. RDS Multi-AZ has sync replication.
 
 You have to pay for cross-region data transfers.
@@ -881,6 +894,8 @@ Amazon MQ: Similar to SQS, but used for **existing applications that are being m
 Amazon Glue: ETL service. It **requires significant coding efforts**. You can write transformed data in a compressed format.
 
 EMR: MapReduce, big data workloads such as Spark, Hive, Hadoop. EMR requires **infra management and significant coding effort**.
+
+AWS Polly: text-to-speech service. **Speech Synthesis Markup Language** gives you additional control and lets you define custom words such as abbreviations and acronyms.
 
 ### AWS Organizations
 
