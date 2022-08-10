@@ -11,26 +11,6 @@ Event types. By default, it logs only management events:
 * Data events (**data plane operations**): resource operations performed on or within a resource (e.g. S3 object level API)
 * Insight events: capture unusual API call rate or error rate activity in your account. If enabled and detects an unusual activity, then insights events are logged
 
-
-
-### Data migration
-
-DataSync: **automates and accelerates** (periodically, **no continous**) large amount of data between HDFS, self-managed object storage, Snowcone, S3, EFS, FSx. DataSync over Direct Connect provides the most reliable hybrid connectivity. DataSync supports **only NFS and SMB protocols and not ISCSI or tapes**. To migrate physical tapes use Storage Gateway - Tape Gateway.
-
-Transfer Family: Supports S3 and EFS. Supports FTP, SFTP, FTPS protocols. It's more expensive than DataSync.
-
-Database Migration Service: **continuous data replication with high availability**. Use it along with Schema Conversion Tool to handle handle **complex database configurations**
-* Supported sources: databases as well as S3. 
-* Supported target: databases, S3, Redis, Redshift, KDS, OpenSearch
-
-
-Snowball Edge Storage and Compute Optimized offer storage clustering. They can be managed through AWS OpsHub. Use Snowball devices when you need to quickly and securely transfer dozens of TBs (up to PB) of data.
-
-Fastest way to move large amount of data (in order):
-1. Snowball Edge: It's fast, cost effective and provides local processing. Compute Optimized provides 39.5 TB of storage (no SSD). Storage Optimized provides 80 TB of storage. Use Schema Conversion Tool (SCT) **to extract and load data locally** onto edge devices. Then you ship devices to AWS, and AWS automatically loads them into S3. Then, you can use Database Migration Service (DMS) to transfer data into target stores. Also remember that you can't directly copy data from Snowball Edge devices into AWS Glacier; instead Snowball -> S3 life cycle policy -> Glacier.
-2. Direct connect: It provides a **private connection** but needs few weeks for provisioning.
-3. Internet / VPN: good use case if you have immediate need and low to modest bandwidth requirements. Aas a rule of thumb, remember that transfering 100 TB over 50 Mbit/s connection takes around 180 days.
-
 ### AWS Organizations
 
 Service control policies (SCP) affect only member accounts (its IAM users, roles, and root user) and not management account. Any account has only those permissions permitted by every parent above it (either implicit or explicit `Deny` will restrict access). SCPs do not affect service-linked role
@@ -579,6 +559,26 @@ Transition between classes:
 * You can NOT transition into S3 Standard (only out of)
 * You can NOT transition from One Zone-IA to the Intelligent-Tiering, Standard-IA, or Glacier Instant Retrieval.
 * Before you transition objects from the S3 Standard or S3 Standard-IA storage classes to S3 Standard-IA or S3 One Zone-IA, you must store them at least 30 days in the S3 Standard storage class. However, you can transfer to other classes e.g. Deep Archive after one day being in Standard.
+
+
+### Data migration
+
+DataSync: **automates and accelerates** (periodically, **no continous**) large amount of data between HDFS, self-managed object storage, Snowcone, S3, EFS, FSx. DataSync over Direct Connect provides the most reliable hybrid connectivity. DataSync supports **only NFS and SMB protocols and not ISCSI or tapes**. To migrate physical tapes use Storage Gateway - Tape Gateway.
+
+Transfer Family: Supports S3 and EFS. Supports FTP, SFTP, FTPS protocols. It's more expensive than DataSync.
+
+Database Migration Service: **continuous data replication with high availability**. Use it along with Schema Conversion Tool to handle handle **complex database configurations**
+* Supported sources: databases as well as S3. 
+* Supported target: databases, S3, Redis, Redshift, KDS, OpenSearch
+
+
+Snowball Edge Storage and Compute Optimized offer storage clustering. They can be managed through AWS OpsHub. Use Snowball devices when you need to quickly and securely transfer dozens of TBs (up to PB) of data.
+
+Fastest way to move large amount of data (in order):
+1. Snowball Edge: It's fast, cost effective and provides local processing. Compute Optimized provides 39.5 TB of storage (no SSD). Storage Optimized provides 80 TB of storage. Use Schema Conversion Tool (SCT) **to extract and load data locally** onto edge devices. Then you ship devices to AWS, and AWS automatically loads them into S3. Then, you can use Database Migration Service (DMS) to transfer data into target stores. Also remember that you can't directly copy data from Snowball Edge devices into AWS Glacier; instead Snowball -> S3 life cycle policy -> Glacier.
+2. Direct connect: It provides a **private connection** but needs few weeks for provisioning.
+3. Internet / VPN: good use case if you have immediate need and low to modest bandwidth requirements. Aas a rule of thumb, remember that transfering 100 TB over 50 Mbit/s connection takes around 180 days.
+
 
 ### Containers
 
