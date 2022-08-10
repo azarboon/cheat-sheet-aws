@@ -1,26 +1,5 @@
 # Tricky tips for AWS Solutions Architect Associate certificate (concise cheat sheet)
 
-### Security
-
-GuardDuty: continuous threat and anomaly detection for AWS accounts, workloads (EC2, EKS), and data stored in **Amazon S3**. Protects against **cryptocurrency mining**. It detect account and bucket **compromises**. Suspending GuardDuty stops the service from analyzing data but doesn't delete findings nor configs. Disabling GuardDuty deletes its data and configs. Data sources: CloudTrail Events, VPC Flow logs and DNS Logs.
-
-Amazon Macie: identify sensitive data stored on S3
-
-Inspector: automated and continual vulnerability management. Inspector is more about identifying vulnerabilities and evaluating against security best practices. It does **NOT** detect compromise.
-
-Web Applicaiton Firewall: can be deployed on ALB, API Gateway, Cloudfront. It helps against SQL injection and cross site scripting attacks.
-
-AWS Shield protects you from common network and transport layer DDoS attacks free of charge. AWS Shield Advanced does offer protection to resources outside of AWS. This should NOT cause unexpected spike in billing costs.
-
-SSM Parameter Store: can serve as a secrets store, but you must rotate the secrets yourself (no automation)
-
-Secrets Manager: secret rotation with built-in integration for RDS, Redshift, DocmentDB.
-
-CloudHSM: dedicated hardware security module to manage and store your encryption keys. It doesn't help with distribution of keys.
-
-AWS allows penetration for some of resources without prior authorization.
-
-
 ### CloudTrail
 
 In console you can view events since last 90 days.
@@ -51,19 +30,6 @@ Fastest way to move large amount of data (in order):
 1. Snowball Edge: It's fast, cost effective and provides local processing. Compute Optimized provides 39.5 TB of storage (no SSD). Storage Optimized provides 80 TB of storage. Use Schema Conversion Tool (SCT) **to extract and load data locally** onto edge devices. Then you ship devices to AWS, and AWS automatically loads them into S3. Then, you can use Database Migration Service (DMS) to transfer data into target stores. Also remember that you can't directly copy data from Snowball Edge devices into AWS Glacier; instead Snowball -> S3 life cycle policy -> Glacier.
 2. Direct connect: It provides a **private connection** but needs few weeks for provisioning.
 3. Internet / VPN: good use case if you have immediate need and low to modest bandwidth requirements. Aas a rule of thumb, remember that transfering 100 TB over 50 Mbit/s connection takes around 180 days.
-
-### Encryption
-
-By default, Key Management Service (KMS) enforces 30 days of waiting period before deleting a customer master key; key's status is "pending" during the time.
-
-#### S3
-
-* In client side encryption: Clients encrypts data and uploads the encrypted data to S3; S3 is not aware of the key.
-* In server side encryption, client requests Amazon to encrypt & decrypt the keys. It can be done with:
-  * S3-Managed Keys (SSE-S3): uses AES-256 and each object is en-crypted with a unique key. 
-  * KMS keys (SSE-KMS): Similar to SSE-S3 but has additional benefits; it separates permissions for KMS keys so enables additional protection and **audit** trail. 
-  * Customer-Provided Keys (SSE-C): customer manages the keys and Amazon S3 manages the encryption process.
-
 
 ### AWS Organizations
 
@@ -846,6 +812,38 @@ To have in-transit encrypted connection with an already encrypted RDS/Aurora dat
 
 In encrypted instances, all logs, backups, and snapshots are encrypted. 
  
+### Security
+
+GuardDuty: continuous threat and anomaly detection for AWS accounts, workloads (EC2, EKS), and data stored in **Amazon S3**. Protects against **cryptocurrency mining**. It detect account and bucket **compromises**. Suspending GuardDuty stops the service from analyzing data but doesn't delete findings nor configs. Disabling GuardDuty deletes its data and configs. Data sources: CloudTrail Events, VPC Flow logs and DNS Logs.
+
+Amazon Macie: identify sensitive data stored on S3
+
+Inspector: automated and continual vulnerability management. Inspector is more about identifying vulnerabilities and evaluating against security best practices. It does **NOT** detect compromise.
+
+Web Applicaiton Firewall: can be deployed on ALB, API Gateway, Cloudfront. It helps against SQL injection and cross site scripting attacks.
+
+AWS Shield protects you from common network and transport layer DDoS attacks free of charge. AWS Shield Advanced does offer protection to resources outside of AWS. This should NOT cause unexpected spike in billing costs.
+
+SSM Parameter Store: can serve as a secrets store, but you must rotate the secrets yourself (no automation)
+
+Secrets Manager: secret rotation with built-in integration for RDS, Redshift, DocmentDB.
+
+CloudHSM: dedicated hardware security module to manage and store your encryption keys. It doesn't help with distribution of keys.
+
+AWS allows penetration for some of resources without prior authorization.
+
+### Encryption
+
+By default, Key Management Service (KMS) enforces 30 days of waiting period before deleting a customer master key; key's status is "pending" during the time.
+
+#### S3
+
+* In client side encryption: Clients encrypts data and uploads the encrypted data to S3; S3 is not aware of the key.
+* In server side encryption, client requests Amazon to encrypt & decrypt the keys. It can be done with:
+  * S3-Managed Keys (SSE-S3): uses AES-256 and each object is en-crypted with a unique key. 
+  * KMS keys (SSE-KMS): Similar to SSE-S3 but has additional benefits; it separates permissions for KMS keys so enables additional protection and **audit** trail. 
+  * Customer-Provided Keys (SSE-C): customer manages the keys and Amazon S3 manages the encryption process.
+
 
 ### Access Control
 
@@ -897,4 +895,3 @@ Cognito user pool: authentication (including social sign-in), user management
 Cognito identity pool (federated identities): verifies token, exchanges it with temporary credentials (through STS) and returns temp credentials to client. Client directly call AWS services using temporary records.
 
 IAM group is not an identity and can’t be identified as a principal in an IAM policy, can’t be used to group EC2 instances, can’t assume a role (only users and services can), can’t be nested.
-
